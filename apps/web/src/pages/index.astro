@@ -1,0 +1,340 @@
+---
+const PLATFORMS = ['pc', 'ps', 'xbox'] as const
+const EXAMPLES = [
+  { platform: 'pc',   username: 'GamersClub' },
+  { platform: 'ps',   username: 'Pengu'      },
+  { platform: 'xbox', username: 'Beaulo'     },
+]
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Rainbow Six Siege stats in your terminal. Fastfetch-style rank art and player stats via curl." />
+    <title>r6fetch — R6 stats in your terminal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="page">
+
+      <!-- Hero -->
+      <header class="hero">
+        <div class="hero-badge">R6 · STATS · TERMINAL</div>
+        <h1 class="hero-title">r6fetch</h1>
+        <p class="hero-subtitle">
+          Rainbow Six Siege stats in your terminal.<br />
+          Rank art, K/D, win rate, and more — via <code>curl</code>.
+        </p>
+        <div class="hero-command">
+          <span class="prompt">$</span>
+          <span class="command">curl r6.mosly.dev/pc/<em>username</em></span>
+        </div>
+      </header>
+
+      <!-- Preview -->
+      <section class="preview">
+        <pre class="terminal"><span class="t-dim">$</span> curl r6.mosly.dev/pc/GamersClub
+
+  <span class="t-badge t-diamond">   ▄██████▄   </span>    <span class="t-bold t-white">GamersClub</span>  <span class="t-dim">@ pc</span>
+  <span class="t-badge t-diamond">  ████████████</span>    <span class="t-dim">──────────────────────────────────────</span>
+  <span class="t-badge t-diamond">  ████████████</span>    <span class="t-grey">Level            </span><span class="t-white">142</span>
+  <span class="t-badge t-diamond">  ████████████</span>    <span class="t-grey">Hours Played     </span><span class="t-white">1,204h</span>
+  <span class="t-badge t-diamond">  ████████████</span>    <span class="t-dim">──────────────────────────────────────</span>
+  <span class="t-badge t-diamond">   ▀██████▀   </span>    <span class="t-grey">Current Rank     </span><span class="t-diamond t-bold">Diamond II</span> <span class="t-dim">· 4,812 MMR</span>
+  <span class="t-badge t-diamond t-bold">  DIAMOND II  </span>    <span class="t-grey">Peak (Season)    </span><span class="t-diamond t-bold">Diamond I</span>  <span class="t-dim">· 4,991 MMR</span>
+  <span class="t-dim">  ────────────</span>    <span class="t-grey">Peak (All Time)  </span><span class="t-emerald t-bold">Emerald I</span>
+                    <span class="t-dim">──────────────────────────────────────</span>
+                    <span class="t-grey">K/D              </span><span class="t-white">1.43</span>
+                    <span class="t-grey">Win Rate         </span><span class="t-white">54%</span>
+                    <span class="t-grey">Kills            </span><span class="t-white">8,204</span>
+                    <span class="t-grey">Wins / Losses    </span><span class="t-white">412 / 352</span>
+                    <span class="t-grey">Headshot %       </span><span class="t-white">38.2%</span>
+                    <span class="t-grey">Top Operator     </span><span class="t-white">Ash</span>
+</pre>
+      </section>
+
+      <!-- Usage -->
+      <section class="section">
+        <h2 class="section-title">Usage</h2>
+        <div class="code-blocks">
+          {EXAMPLES.map((ex) => (
+            <div class="code-block">
+              <span class="code-label">{ex.platform}</span>
+              <code>curl r6.mosly.dev/{ex.platform}/{ex.username}</code>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Platforms -->
+      <section class="section">
+        <h2 class="section-title">Platforms</h2>
+        <div class="platform-grid">
+          {PLATFORMS.map((p) => (
+            <div class="platform-card">
+              <span class="platform-slug">{p}</span>
+              <span class="platform-label">
+                {p === 'pc' ? 'Ubisoft Connect' : p === 'ps' ? 'PlayStation Network' : 'Xbox Live'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Setup -->
+      <section class="section">
+        <h2 class="section-title">Default Player Setup</h2>
+        <p class="section-desc">
+          Save your platform and username locally so you can run <code>r6</code> with no arguments.
+        </p>
+        <div class="code-block">
+          <code>curl r6.mosly.dev/setup | sh</code>
+        </div>
+        <p class="section-desc setup-note">
+          This adds an <code>r6</code> shell function that reads your saved config.
+          You can still override it: <code>r6 ps Pengu</code>
+        </p>
+      </section>
+
+      <footer class="footer">
+        <p>Powered by <a href="https://r6data.eu" target="_blank" rel="noopener">r6data.eu</a></p>
+      </footer>
+
+    </div>
+  </body>
+</html>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0d0d0f;
+    --bg-card:   #141417;
+    --bg-term:   #0a0a0c;
+    --border:    #2a2a2f;
+    --accent:    #5b9bd5;
+    --text:      #e8e8ec;
+    --text-dim:  #888890;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Inter', sans-serif;
+    --diamond:   #5b9bd5;
+    --emerald:   #50c878;
+  }
+
+  html { background: var(--bg); color: var(--text); font-family: var(--sans); }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+  }
+
+  /* ── Hero ──────────────────────────────────── */
+  .hero {
+    text-align: center;
+    padding: 5rem 0 3.5rem;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 0.3rem 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-title {
+    font-family: var(--mono);
+    font-size: clamp(3rem, 10vw, 5.5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-subtitle code {
+    font-family: var(--mono);
+    font-size: 0.9em;
+    color: var(--text);
+    background: var(--bg-card);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+  }
+
+  .hero-command {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--mono);
+    font-size: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1.4rem;
+  }
+
+  .prompt { color: var(--accent); user-select: none; }
+
+  .command { color: var(--text); }
+  .command em { color: var(--text-dim); font-style: normal; }
+
+  /* ── Terminal Preview ──────────────────────── */
+  .preview {
+    margin: 0 0 4rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .terminal {
+    background: var(--bg-term);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.6;
+    padding: 1.5rem 1.75rem;
+    overflow-x: auto;
+    color: var(--text);
+    white-space: pre;
+  }
+
+  .t-dim     { color: var(--text-dim); }
+  .t-grey    { color: #a0a0a8; }
+  .t-white   { color: var(--text); }
+  .t-bold    { font-weight: 700; }
+  .t-badge   { display: inline; }
+  .t-diamond { color: var(--diamond); }
+  .t-emerald { color: var(--emerald); }
+
+  /* ── Sections ──────────────────────────────── */
+  .section {
+    margin-bottom: 3.5rem;
+  }
+
+  .section-title {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.75rem;
+  }
+
+  .section-desc {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+
+  .section-desc code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    color: var(--text);
+    background: var(--bg-card);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+  }
+
+  .setup-note { margin-top: 1rem; font-size: 0.875rem; }
+
+  /* ── Code Blocks ───────────────────────────── */
+  .code-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .code-block {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1.1rem;
+  }
+
+  .code-label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    min-width: 3rem;
+    text-transform: uppercase;
+  }
+
+  .code-block code {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  /* ── Platform Grid ─────────────────────────── */
+  .platform-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .platform-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+  }
+
+  .platform-slug {
+    font-family: var(--mono);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .platform-label {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+  }
+
+  /* ── Footer ────────────────────────────────── */
+  .footer {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.82rem;
+  }
+
+  .footer a {
+    color: var(--text-dim);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .footer a:hover { color: var(--text); }
+
+  @media (max-width: 600px) {
+    .terminal { font-size: 0.68rem; }
+    .hero-command { font-size: 0.85rem; }
+  }
+</style>

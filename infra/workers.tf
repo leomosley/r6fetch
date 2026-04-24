@@ -1,0 +1,26 @@
+# KV namespace for response caching
+resource "cloudflare_workers_kv_namespace" "cache" {
+  account_id = var.cloudflare_account_id
+  title      = "r6fetch-cache"
+}
+
+# Worker script is deployed via `wrangler deploy` in CI — Terraform manages
+# the surrounding infrastructure (KV bindings, secrets, routes) rather than
+# the script bundle itself to keep the deployment boundary clean.
+
+# API key stored as a Worker secret (never appears in state in plaintext
+# because Cloudflare secrets are write-only from the API perspective).
+resource "cloudflare_worker_secret" "r6data_api_key" {
+  account_id  = var.cloudflare_account_id
+  script_name = "r6fetch-api"
+  name        = "R6DATA_API_KEY"
+  secret_text = var.r6data_api_key
+}
+
+# Custom domain route: r6.mosly.dev/* → r6fetch-api worker
+resource "cloudflare_worker_domain" "r6" {
+  account_id = var.cloudflare_account_id
+  hostname   = "r6.mosly.dev"
+  service    = "r6fetch-api"
+  zone_id    = var.cloudflare_zone_id
+}

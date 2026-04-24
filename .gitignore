@@ -1,0 +1,29 @@
+node_modules/
+dist/
+.astro/
+
+# Cloudflare
+.wrangler/
+apps/api/public/
+
+# Turbo
+.turbo/
+
+# Terraform
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.backup
+infra/*.tfvars
+infra/.terraform.lock.hcl
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Bun
+bun.lockb
