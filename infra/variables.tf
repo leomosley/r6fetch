@@ -19,3 +19,9 @@ variable "r6data_api_key" {
   type        = string
   sensitive   = true
 }
+
+variable "domain" {
+  description = "Public domain for the r6fetch API (e.g. r6.mosly.dev)"
+  type        = string
+  default     = "r6.mosly.dev"
+}

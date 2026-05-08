@@ -5,5 +5,5 @@ output "kv_namespace_id" {
 
 output "worker_url" {
   description = "Worker route URL"
-  value       = "https://r6.mosly.dev"
+  value       = "https://${var.domain}"
 }

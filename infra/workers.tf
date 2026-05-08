@@ -17,10 +17,10 @@ resource "cloudflare_worker_secret" "r6data_api_key" {
   secret_text = var.r6data_api_key
 }
 
-# Custom domain route: r6.mosly.dev/* → r6fetch-api worker
+# Custom domain route: <domain> → r6fetch-api worker
 resource "cloudflare_worker_domain" "r6" {
   account_id = var.cloudflare_account_id
-  hostname   = "r6.mosly.dev"
+  hostname   = var.domain
   service    = "r6fetch-api"
   zone_id    = var.cloudflare_zone_id
 }
