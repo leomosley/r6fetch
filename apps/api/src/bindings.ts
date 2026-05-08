@@ -3,4 +3,5 @@ export interface Bindings {
   ASSETS: Fetcher;
   R6DATA_API_KEY: string;
   CACHE_TTL_SECONDS: string;
+  DOMAIN: string;
 }
