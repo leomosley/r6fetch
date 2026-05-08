@@ -3,11 +3,8 @@
   "compilerOptions": {
     "lib": ["ES2022"],
     "types": ["@cloudflare/workers-types"],
-    "noEmit": true
+    "noEmit": true,
+    "paths": { "~/*": ["./src/*"] }
   },
-  "include": [
-    "src",
-    "../../packages/r6-client/src",
-    "../../packages/renderer/src"
-  ]
+  "include": ["src", "../../packages/r6-client/src", "../../packages/renderer/src"]
 }
