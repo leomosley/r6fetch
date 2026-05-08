@@ -30,3 +30,4 @@ export function render(profile: PlayerProfile): string {
 
 export { getRankArt } from "~/rank-art";
 export { buildStatLines } from "~/stat-panel";
+export { RANK_ART_MAP, RANK_COLORS_MAP, ART_WIDTH } from "~/rank-art-data";
