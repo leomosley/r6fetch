@@ -1,4 +1,4 @@
-import type { RankInfo } from "./types";
+import type { RankInfo } from "~/types";
 
 // Rank tiers: 0 = Unranked, 1-5 = Copper, 6-10 = Bronze, 11-15 = Silver,
 // 16-20 = Gold, 21-25 = Platinum, 26-30 = Emerald, 31-35 = Diamond, 36 = Champion
@@ -52,8 +52,6 @@ export function tierToRankInfo(tier: number, mmr: number): RankInfo {
 }
 
 export function rankNameToTier(name: string): number {
-  const idx = RANK_NAMES.findIndex(
-    (n) => n.toLowerCase() === name.toLowerCase(),
-  );
+  const idx = RANK_NAMES.findIndex((n) => n.toLowerCase() === name.toLowerCase());
   return idx >= 0 ? idx : 0;
 }
