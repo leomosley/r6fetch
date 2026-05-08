@@ -1,6 +1,8 @@
 # r6fetch
 
-Rainbow Six Siege stats in your terminal, fastfetch-style.
+Rainbow Six Siege stats in your terminal.
+
+![alt text](docs/image.png)
 
 ```
 curl r6.mosly.dev/pc/username
