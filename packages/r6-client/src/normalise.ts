@@ -63,9 +63,9 @@ export function normaliseProfile(params: NormaliseParams): PlayerProfile {
   const losses = (outcomes?.losses as number) ?? 0;
 
   const currentRankTier = (profile?.rank as number) ?? 0;
-  const currentMMR = (profile?.rank_points as number) ?? 0;
+  const currentRP = (profile?.rank_points as number) ?? 0;
   const peakAllTimeTier = (profile?.max_rank as number) ?? currentRankTier;
-  const peakAllTimeMMR = (profile?.max_rank_points as number) ?? currentMMR;
+  const peakAllTimeRP = (profile?.max_rank_points as number) ?? currentRP;
 
   const acc = accountInfo as Record<string, unknown> | null;
   const level = (acc?.level as number) ?? (acc?.xp_level as number) ?? 0;
@@ -83,8 +83,8 @@ export function normaliseProfile(params: NormaliseParams): PlayerProfile {
     username,
     platform,
     level,
-    currentRank: tierToRankInfo(currentRankTier, currentMMR),
-    peakRankAllTime: tierToRankInfo(peakAllTimeTier, peakAllTimeMMR),
+    currentRank: tierToRankInfo(currentRankTier, currentRP),
+    peakRankAllTime: tierToRankInfo(peakAllTimeTier, peakAllTimeRP),
     kd: Math.round((kills / deaths) * 100) / 100,
     winRate: wins + losses > 0 ? Math.round((wins / (wins + losses)) * 100) : 0,
     kills,

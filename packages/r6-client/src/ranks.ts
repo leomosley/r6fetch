@@ -42,12 +42,12 @@ export const RANK_NAMES: readonly string[] = [
   "Champion",
 ];
 
-export function tierToRankInfo(tier: number, mmr: number): RankInfo {
+export function tierToRankInfo(tier: number, rp: number): RankInfo {
   const clamped = Math.max(0, Math.min(36, Math.round(tier)));
   return {
     name: RANK_NAMES[clamped] ?? "Unknown",
     tier: clamped,
-    mmr,
+    rp,
   };
 }
 

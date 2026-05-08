@@ -3,7 +3,7 @@ export type Platform = "pc" | "ps" | "xbox";
 export interface RankInfo {
   name: string;
   tier: number;
-  mmr: number;
+  rp: number;
 }
 
 export interface PlayerProfile {
