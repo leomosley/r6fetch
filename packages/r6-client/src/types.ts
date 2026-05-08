@@ -10,13 +10,12 @@ export interface PlayerProfile {
   username: string;
   platform: Platform;
   level: number;
-  hoursPlayed: number;
   currentRank: RankInfo;
-  peakRankSeason: RankInfo;
   peakRankAllTime: RankInfo;
   kd: number;
   winRate: number;
   kills: number;
+  deaths: number;
   wins: number;
   losses: number;
   headshotPercent: number | null;
@@ -33,7 +32,7 @@ export class PlayerNotFoundError extends Error {
 export class ApiError extends Error {
   constructor(
     message: string,
-    public readonly cause?: unknown,
+    public readonly cause?: unknown
   ) {
     super(message);
     this.name = "ApiError";
