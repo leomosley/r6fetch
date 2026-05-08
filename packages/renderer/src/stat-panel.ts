@@ -30,10 +30,10 @@ function rankColor(tier: number): string {
   return fg(r, g, b);
 }
 
-function fmtRank(name: string, mmr: number, tier: number): string {
+function fmtRank(name: string, rp: number, tier: number): string {
   const col = rankColor(tier);
-  const mmrStr = mmr > 0 ? `${DIM} · ${RESET}${GREY}${mmr.toLocaleString()} MMR${RESET}` : "";
-  return `${col}${BOLD}${name}${RESET}${mmrStr}`;
+  const rpStr = rp > 0 ? `${DIM} · ${RESET}${GREY}${rp.toLocaleString()} RP${RESET}` : "";
+  return `${col}${BOLD}${name}${RESET}${rpStr}`;
 }
 
 function fmtNumber(n: number): string {
@@ -55,14 +55,14 @@ export function buildStatLines(profile: PlayerProfile): string[] {
   lines.push({
     kind: "stat",
     key: "Current Rank",
-    value: fmtRank(profile.currentRank.name, profile.currentRank.mmr, profile.currentRank.tier),
+    value: fmtRank(profile.currentRank.name, profile.currentRank.rp, profile.currentRank.tier),
   });
   lines.push({
     kind: "stat",
     key: "Peak Rank",
     value: fmtRank(
       profile.peakRankAllTime.name,
-      profile.peakRankAllTime.mmr,
+      profile.peakRankAllTime.rp,
       profile.peakRankAllTime.tier
     ),
   });
