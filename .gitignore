@@ -5,6 +5,7 @@ dist/
 # Cloudflare
 .wrangler/
 apps/api/public/
+apps/api/.dev.vars
 
 # Turbo
 .turbo/
