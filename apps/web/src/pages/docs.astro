@@ -1,0 +1,371 @@
+---
+const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6.mosly.dev";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Documentation for r6fetch - Rainbow Six Siege stats in your terminal."
+    />
+    <title>docs - r6fetch</title>
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <a href="https://mosly.dev" target="_blank" rel="noopener noreferrer" class="header-logo">
+        <img src="/icon.png" alt="mosly.dev" width="32" height="32" />
+      </a>
+      <nav class="header-nav">
+        <a href="/docs" class="nav-link nav-link--docs">docs</a>
+        <a
+          href="https://github.com/leomosley/r6fetch"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="nav-link nav-link--github"
+        >
+          github
+          <svg
+            class="external-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M7 17L17 7M17 7H7M17 7V17"></path>
+          </svg>
+        </a>
+      </nav>
+    </header>
+
+    <!-- Main content -->
+    <main class="main">
+      <div class="content">
+        <a href="/" class="back-link">&larr; back</a>
+
+        <h1 class="title">docs</h1>
+
+        <section class="section">
+          <h2 class="section-title">usage</h2>
+          <p class="text">Fetch Rainbow Six Siege stats directly in your terminal using curl.</p>
+
+          <div class="code-block">
+            <code
+              ><span class="prompt">$</span> curl {DOMAIN}/<span class="param"
+                >&lt;platform&gt;</span
+              >/<span class="param">&lt;username&gt;</span></code
+            >
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">platforms</h2>
+          <ul class="list">
+            <li><code class="inline-code">pc</code> - Ubisoft Connect / PC</li>
+            <li><code class="inline-code">psn</code> - PlayStation Network</li>
+            <li><code class="inline-code">xbl</code> - Xbox Live</li>
+          </ul>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">examples</h2>
+
+          <div class="code-block">
+            <code><span class="prompt">$</span> curl {DOMAIN}/pc/mosly</code>
+          </div>
+
+          <div class="code-block">
+            <code><span class="prompt">$</span> curl {DOMAIN}/pc/wells.SCTR</code>
+          </div>
+
+          <div class="code-block">
+            <code><span class="prompt">$</span> curl {DOMAIN}/pc/Gaveni.M80</code>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">response</h2>
+          <p class="text">Returns ANSI-colored output displaying:</p>
+          <ul class="list">
+            <li>Rank art for current season</li>
+            <li>Player name and level</li>
+            <li>Current rank and RP</li>
+            <li>Win/Loss stats</li>
+            <li>K/D ratio</li>
+          </ul>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">setup</h2>
+          <p class="text">Save a default player to quickly fetch stats with a single command.</p>
+
+          <h3 class="subsection-title">bash / zsh</h3>
+          <div class="code-block">
+            <code><span class="prompt">$</span> curl {DOMAIN}/setup | sh</code>
+          </div>
+
+          <h3 class="subsection-title">powershell</h3>
+          <div class="code-block">
+            <code><span class="prompt">></span> iex (irm {DOMAIN}/setup)</code>
+          </div>
+
+          <p class="text">
+            The setup script will prompt you for your platform and username, then create:
+          </p>
+          <ul class="list">
+            <li>A config file at <code class="inline-code">~/.config/r6fetch/config</code></li>
+            <li>
+              An <code class="inline-code">r6fetch</code> shell function in your shell profile
+            </li>
+          </ul>
+
+          <p class="text">After setup, reload your shell and run:</p>
+          <div class="code-block">
+            <code><span class="prompt">$</span> r6fetch</code>
+          </div>
+
+          <p class="text">You can also override the defaults:</p>
+          <div class="code-block">
+            <code><span class="prompt">$</span> r6fetch pc mosly</code>
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
+
+<style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  :root {
+    --bg: #030305;
+    --text: #f0f0f5;
+    --text-dim: #505060;
+    --mono: "JetBrains Mono", monospace;
+    --accent: 196, 13, 98;
+  }
+
+  html,
+  body {
+    min-height: 100%;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════════════════ */
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 2rem;
+  }
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+    opacity: 0.8;
+    transition: opacity 0.15s ease;
+  }
+
+  .header-logo:hover {
+    opacity: 1;
+  }
+
+  .header-logo img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .nav-link {
+    font-family: var(--mono);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .nav-link--docs {
+    color: var(--text);
+    opacity: 0.9;
+  }
+
+  .nav-link--docs:hover {
+    opacity: 1;
+  }
+
+  .nav-link--github {
+    color: var(--text-dim);
+  }
+
+  .nav-link--github:hover {
+    color: var(--text);
+  }
+
+  .external-icon {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.5;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     MAIN CONTENT
+     ═══════════════════════════════════════════════════ */
+  .main {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 6rem 2rem 4rem;
+  }
+
+  .content {
+    max-width: 600px;
+    width: 100%;
+  }
+
+  .back-link {
+    display: inline-block;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+    transition: color 0.15s ease;
+  }
+
+  .back-link:hover {
+    color: var(--text);
+  }
+
+  .title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 3rem;
+    color: var(--text);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     SECTIONS
+     ═══════════════════════════════════════════════════ */
+  .section {
+    margin-bottom: 2.5rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgb(var(--accent));
+    margin-bottom: 0.75rem;
+  }
+
+  .subsection-title {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-dim);
+    margin-bottom: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .text {
+    font-size: 0.875rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .list {
+    list-style: none;
+    font-size: 0.875rem;
+    color: var(--text-dim);
+    line-height: 1.8;
+  }
+
+  .list li::before {
+    content: "-";
+    margin-right: 0.5rem;
+    color: var(--text-dim);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     CODE BLOCKS
+     ═══════════════════════════════════════════════════ */
+  .code-block {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    overflow-x: auto;
+  }
+
+  .code-block code {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--text);
+  }
+
+  .prompt {
+    color: rgb(var(--accent));
+    margin-right: 0.5rem;
+  }
+
+  .param {
+    color: var(--text-dim);
+  }
+
+  .inline-code {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    color: var(--text);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     RESPONSIVE
+     ═══════════════════════════════════════════════════ */
+  @media (max-width: 600px) {
+    .main {
+      padding: 5rem 1.5rem 3rem;
+    }
+
+    .title {
+      font-size: 2rem;
+    }
+  }
+</style>
