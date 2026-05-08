@@ -1,10 +1,11 @@
 ---
-const PLATFORMS = ['pc', 'ps', 'xbox'] as const
+const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6.mosly.dev";
+const PLATFORMS = ["pc", "ps", "xbox"] as const;
 const EXAMPLES = [
-  { platform: 'pc',   username: 'GamersClub' },
-  { platform: 'ps',   username: 'Pengu'      },
-  { platform: 'xbox', username: 'Beaulo'     },
-]
+  { platform: "pc", username: "GamersClub" },
+  { platform: "ps", username: "Pengu" },
+  { platform: "xbox", username: "Beaulo" },
+];
 ---
 
 <!doctype html>
@@ -12,15 +13,20 @@ const EXAMPLES = [
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Rainbow Six Siege stats in your terminal. Fastfetch-style rank art and player stats via curl." />
+    <meta
+      name="description"
+      content="Rainbow Six Siege stats in your terminal. Fastfetch-style rank art and player stats via curl."
+    />
     <title>r6fetch — R6 stats in your terminal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div class="page">
-
       <!-- Hero -->
       <header class="hero">
         <div class="hero-badge">R6 · STATS · TERMINAL</div>
@@ -31,13 +37,14 @@ const EXAMPLES = [
         </p>
         <div class="hero-command">
           <span class="prompt">$</span>
-          <span class="command">curl r6.mosly.dev/pc/<em>username</em></span>
+          <span class="command">curl {DOMAIN}/pc/<em>username</em></span>
         </div>
       </header>
 
       <!-- Preview -->
       <section class="preview">
-        <pre class="terminal"><span class="t-dim">$</span> curl r6.mosly.dev/pc/GamersClub
+        <pre
+          class="terminal"><span class="t-dim">$</span> curl {DOMAIN}/pc/GamersClub
 
   <span class="t-badge t-diamond">   ▄██████▄   </span>    <span class="t-bold t-white">GamersClub</span>  <span class="t-dim">@ pc</span>
   <span class="t-badge t-diamond">  ████████████</span>    <span class="t-dim">──────────────────────────────────────</span>
@@ -61,12 +68,16 @@ const EXAMPLES = [
       <section class="section">
         <h2 class="section-title">Usage</h2>
         <div class="code-blocks">
-          {EXAMPLES.map((ex) => (
-            <div class="code-block">
-              <span class="code-label">{ex.platform}</span>
-              <code>curl r6.mosly.dev/{ex.platform}/{ex.username}</code>
-            </div>
-          ))}
+          {
+            EXAMPLES.map((ex) => (
+              <div class="code-block">
+                <span class="code-label">{ex.platform}</span>
+                <code>
+                  curl {DOMAIN}/{ex.platform}/{ex.username}
+                </code>
+              </div>
+            ))
+          }
         </div>
       </section>
 
@@ -74,14 +85,20 @@ const EXAMPLES = [
       <section class="section">
         <h2 class="section-title">Platforms</h2>
         <div class="platform-grid">
-          {PLATFORMS.map((p) => (
-            <div class="platform-card">
-              <span class="platform-slug">{p}</span>
-              <span class="platform-label">
-                {p === 'pc' ? 'Ubisoft Connect' : p === 'ps' ? 'PlayStation Network' : 'Xbox Live'}
-              </span>
-            </div>
-          ))}
+          {
+            PLATFORMS.map((p) => (
+              <div class="platform-card">
+                <span class="platform-slug">{p}</span>
+                <span class="platform-label">
+                  {p === "pc"
+                    ? "Ubisoft Connect"
+                    : p === "ps"
+                      ? "PlayStation Network"
+                      : "Xbox Live"}
+                </span>
+              </div>
+            ))
+          }
         </div>
       </section>
 
@@ -89,43 +106,52 @@ const EXAMPLES = [
       <section class="section">
         <h2 class="section-title">Default Player Setup</h2>
         <p class="section-desc">
-          Save your platform and username locally so you can run <code>r6</code> with no arguments.
+          Save your platform and username locally so you can run <code>r6fetch</code> with no arguments.
         </p>
         <div class="code-block">
-          <code>curl r6.mosly.dev/setup | sh</code>
+          <code>curl {DOMAIN}/setup | sh</code>
         </div>
         <p class="section-desc setup-note">
-          This adds an <code>r6</code> shell function that reads your saved config.
-          You can still override it: <code>r6 ps Pengu</code>
+          This adds an <code>r6fetch</code> shell function that reads your saved config. You can still
+          override it: <code>r6fetch ps Pengu</code>
         </p>
       </section>
 
       <footer class="footer">
         <p>Powered by <a href="https://r6data.eu" target="_blank" rel="noopener">r6data.eu</a></p>
       </footer>
-
     </div>
   </body>
 </html>
 
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg:        #0d0d0f;
-    --bg-card:   #141417;
-    --bg-term:   #0a0a0c;
-    --border:    #2a2a2f;
-    --accent:    #5b9bd5;
-    --text:      #e8e8ec;
-    --text-dim:  #888890;
-    --mono:      'JetBrains Mono', monospace;
-    --sans:      'Inter', sans-serif;
-    --diamond:   #5b9bd5;
-    --emerald:   #50c878;
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
   }
 
-  html { background: var(--bg); color: var(--text); font-family: var(--sans); }
+  :root {
+    --bg: #0d0d0f;
+    --bg-card: #141417;
+    --bg-term: #0a0a0c;
+    --border: #2a2a2f;
+    --accent: #5b9bd5;
+    --text: #e8e8ec;
+    --text-dim: #888890;
+    --mono: "JetBrains Mono", monospace;
+    --sans: "Inter", sans-serif;
+    --diamond: #5b9bd5;
+    --emerald: #50c878;
+  }
+
+  html {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+  }
 
   .page {
     max-width: 860px;
@@ -189,10 +215,18 @@ const EXAMPLES = [
     padding: 0.85rem 1.4rem;
   }
 
-  .prompt { color: var(--accent); user-select: none; }
+  .prompt {
+    color: var(--accent);
+    user-select: none;
+  }
 
-  .command { color: var(--text); }
-  .command em { color: var(--text-dim); font-style: normal; }
+  .command {
+    color: var(--text);
+  }
+  .command em {
+    color: var(--text-dim);
+    font-style: normal;
+  }
 
   /* ── Terminal Preview ──────────────────────── */
   .preview {
@@ -213,13 +247,27 @@ const EXAMPLES = [
     white-space: pre;
   }
 
-  .t-dim     { color: var(--text-dim); }
-  .t-grey    { color: #a0a0a8; }
-  .t-white   { color: var(--text); }
-  .t-bold    { font-weight: 700; }
-  .t-badge   { display: inline; }
-  .t-diamond { color: var(--diamond); }
-  .t-emerald { color: var(--emerald); }
+  .t-dim {
+    color: var(--text-dim);
+  }
+  .t-grey {
+    color: #a0a0a8;
+  }
+  .t-white {
+    color: var(--text);
+  }
+  .t-bold {
+    font-weight: 700;
+  }
+  .t-badge {
+    display: inline;
+  }
+  .t-diamond {
+    color: var(--diamond);
+  }
+  .t-emerald {
+    color: var(--emerald);
+  }
 
   /* ── Sections ──────────────────────────────── */
   .section {
@@ -253,7 +301,10 @@ const EXAMPLES = [
     border-radius: 4px;
   }
 
-  .setup-note { margin-top: 1rem; font-size: 0.875rem; }
+  .setup-note {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+  }
 
   /* ── Code Blocks ───────────────────────────── */
   .code-blocks {
@@ -331,10 +382,16 @@ const EXAMPLES = [
     text-underline-offset: 3px;
   }
 
-  .footer a:hover { color: var(--text); }
+  .footer a:hover {
+    color: var(--text);
+  }
 
   @media (max-width: 600px) {
-    .terminal { font-size: 0.68rem; }
-    .hero-command { font-size: 0.85rem; }
+    .terminal {
+      font-size: 0.68rem;
+    }
+    .hero-command {
+      font-size: 0.85rem;
+    }
   }
 </style>
