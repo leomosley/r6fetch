@@ -1,0 +1,4 @@
+node_modules
+dist
+.wrangler
+packages/renderer/src/rank-art-data.ts
