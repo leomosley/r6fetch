@@ -4,6 +4,9 @@ compatibility_date = "2025-04-24"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = false
 
+[observability]
+enabled = true
+
 [[routes]]
 pattern = "r6fetch.cc/*"
 zone_name = "r6fetch.cc"
