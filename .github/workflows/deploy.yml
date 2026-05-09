@@ -56,6 +56,13 @@ jobs:
         working-directory: infra
         run: tofu init
 
+      - name: Import existing resources
+        working-directory: infra
+        continue-on-error: true
+        run: |
+          # Import DNS record if it exists (zone_id/record_type/record_name)
+          tofu import cloudflare_record.root "${{ secrets.CF_ZONE_ID }}/A/r6fetch.cc" || true
+
       - name: OpenTofu apply
         working-directory: infra
         run: tofu apply -auto-approve
