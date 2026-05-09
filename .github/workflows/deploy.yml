@@ -38,6 +38,7 @@ jobs:
       # R2 backend credentials (S3-compatible)
       AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL_S3: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
       # Terraform variables
       TF_VAR_cloudflare_api_token: ${{ secrets.CF_API_TOKEN }}
       TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
@@ -50,9 +51,7 @@ jobs:
 
       - name: OpenTofu init
         working-directory: infra
-        run: |
-          tofu init \
-            -backend-config="endpoints={s3=\"https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com\"}"
+        run: tofu init
 
       - name: OpenTofu apply
         working-directory: infra
