@@ -48,10 +48,8 @@ app.get("/:platform/:username", async (c) => {
   const platform = c.req.param("platform");
 
   if (!isValidPlatform(platform)) {
-    return c.text(
-      `\n  Unknown platform: '${platform}'\n  Must be one of: pc, ps, xbox\n\n  Usage: curl ${c.env.DOMAIN}/<platform>/<username>\n\n`,
-      400
-    );
+    // Not a valid platform - try serving as static asset
+    return c.env.ASSETS.fetch(c.req.raw);
   }
 
   return statsRoute(c);
@@ -59,6 +57,12 @@ app.get("/:platform/:username", async (c) => {
 
 app.get("/:platform", (c) => {
   const platform = c.req.param("platform");
+
+  if (!isValidPlatform(platform)) {
+    // Not a valid platform - try serving as static asset
+    return c.env.ASSETS.fetch(c.req.raw);
+  }
+
   return c.text(
     `\n  Missing username.\n  Usage: curl ${c.env.DOMAIN}/${platform}/<username>\n\n`,
     400
