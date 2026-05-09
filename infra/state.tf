@@ -4,6 +4,6 @@
 
 resource "cloudflare_r2_bucket" "tfstate" {
   account_id = var.cloudflare_account_id
-  name       = "r6fetch-account-token"
+  name       = "r6fetch"
   location   = "WNAM" # Western North America
 }

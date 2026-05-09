@@ -3,7 +3,7 @@ terraform {
   # CI/CD passes credentials via AWS_ACCESS_KEY_ID & AWS_SECRET_ACCESS_KEY
   # Endpoint is set via AWS_ENDPOINT_URL_S3 environment variable
   backend "s3" {
-    bucket = "r6fetch-account-token"
+    bucket = "r6fetch"
     key    = "terraform.tfstate"
     region = "auto"
 
