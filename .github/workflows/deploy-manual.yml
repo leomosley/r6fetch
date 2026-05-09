@@ -17,6 +17,8 @@ jobs:
     name: OpenTofu apply
     if: ${{ inputs.deploy_infra }}
     runs-on: ubuntu-latest
+    outputs:
+      kv_namespace_id: ${{ steps.output.outputs.kv_namespace_id }}
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
@@ -38,10 +40,19 @@ jobs:
         working-directory: infra
         run: tofu apply -auto-approve
 
+      - name: Get outputs
+        id: output
+        working-directory: infra
+        run: echo "kv_namespace_id=$(tofu output -raw kv_namespace_id)" >> "$GITHUB_OUTPUT"
+
   deploy-api:
     name: Deploy Worker
-    if: ${{ inputs.deploy_worker }}
+    needs: deploy-infra
+    if: ${{ always() && inputs.deploy_worker && (needs.deploy-infra.result == 'success' || needs.deploy-infra.result == 'skipped') }}
     runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -55,9 +66,21 @@ jobs:
       - name: Build web (outputs to apps/api/public)
         run: bun run build --filter=@r6fetch/web
 
+      - name: Get KV namespace ID
+        id: kv
+        run: |
+          if [ -n "${{ needs.deploy-infra.outputs.kv_namespace_id }}" ]; then
+            echo "id=${{ needs.deploy-infra.outputs.kv_namespace_id }}" >> "$GITHUB_OUTPUT"
+          else
+            # Fetch from Cloudflare API if infra was skipped
+            KV_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT_ID }}/storage/kv/namespaces?per_page=100" \
+              -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+              -H "Content-Type: application/json" | jq -r '.result[] | select(.title=="r6fetch-cache") | .id')
+            echo "id=$KV_ID" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy Worker
         working-directory: apps/api
-        run: bunx wrangler deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          sed -i 's/PLACEHOLDER_KV_ID/${{ steps.kv.outputs.id }}/g' wrangler.toml
+          bunx wrangler deploy
