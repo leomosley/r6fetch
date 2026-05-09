@@ -10,12 +10,5 @@ resource "cloudflare_zone_settings_override" "r6fetch-cc" {
   }
 }
 
-# A record pointing r6fetch.cc to Cloudflare's Workers (root domain)
-# Using @ for the root domain, proxied through Cloudflare.
-resource "cloudflare_record" "root" {
-  zone_id = var.cloudflare_zone_id
-  name    = "@"
-  type    = "A"
-  content = "192.0.2.1" # Dummy IP - traffic is proxied to Workers
-  proxied = true
-}
+# DNS record is not needed - cloudflare_worker_domain in workers.tf
+# handles routing r6fetch.cc to the Worker automatically.
