@@ -1,18 +1,19 @@
 terraform {
   # Cloudflare R2 backend (S3-compatible)
-  # Initialize with: tofu init -backend-config=backend.conf
   # CI/CD passes credentials via AWS_ACCESS_KEY_ID & AWS_SECRET_ACCESS_KEY
+  # Endpoint is set via AWS_ENDPOINT_URL_S3 environment variable
   backend "s3" {
-    bucket = "r6fetch-tfstate"
+    bucket = "r6fetch-account-token"
     key    = "terraform.tfstate"
     region = "auto"
 
-    # R2 doesn't support these features
+    # R2 compatibility settings
     skip_credentials_validation = true
     skip_requesting_account_id  = true
     skip_metadata_api_check     = true
     skip_region_validation      = true
     skip_s3_checksum            = true
+    use_path_style_endpoint     = true
   }
 
   required_providers {
