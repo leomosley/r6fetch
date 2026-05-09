@@ -1,0 +1,63 @@
+name: Deploy (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_infra:
+        description: "Deploy infrastructure (OpenTofu)"
+        type: boolean
+        default: true
+      deploy_worker:
+        description: "Deploy Worker + Web"
+        type: boolean
+        default: true
+
+jobs:
+  deploy-infra:
+    name: OpenTofu apply
+    if: ${{ inputs.deploy_infra }}
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL_S3: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+      TF_VAR_cloudflare_api_token: ${{ secrets.CF_API_TOKEN }}
+      TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
+      TF_VAR_cloudflare_zone_id: ${{ secrets.CF_ZONE_ID }}
+      TF_VAR_r6data_api_key: ${{ secrets.R6DATA_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: opentofu/setup-opentofu@v1
+
+      - name: OpenTofu init
+        working-directory: infra
+        run: tofu init
+
+      - name: OpenTofu apply
+        working-directory: infra
+        run: tofu apply -auto-approve
+
+  deploy-api:
+    name: Deploy Worker
+    if: ${{ inputs.deploy_worker }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build web (outputs to apps/api/public)
+        run: bun run build --filter=@r6fetch/web
+
+      - name: Deploy Worker
+        working-directory: apps/api
+        run: bunx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
