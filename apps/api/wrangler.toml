@@ -4,8 +4,9 @@ compatibility_date = "2025-04-24"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = false
 
-[observability]
+[observability.logs]
 enabled = true
+invocation_logs = true
 
 [[routes]]
 pattern = "r6fetch.cc/*"
