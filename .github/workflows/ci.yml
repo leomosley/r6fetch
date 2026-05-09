@@ -21,13 +21,16 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
-  terraform-plan:
-    name: Terraform plan
+  opentofu-plan:
+    name: OpenTofu plan
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
     env:
-      TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN }}
+      # R2 backend credentials (S3-compatible)
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      # Terraform variables
       TF_VAR_cloudflare_api_token: ${{ secrets.CF_API_TOKEN }}
       TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
       TF_VAR_cloudflare_zone_id: ${{ secrets.CF_ZONE_ID }}
@@ -35,16 +38,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: hashicorp/setup-terraform@v3
+      - uses: opentofu/setup-opentofu@v1
 
-      - name: Terraform init
+      - name: OpenTofu init
         working-directory: infra
-        run: terraform init
+        run: |
+          tofu init \
+            -backend-config="endpoints={s3=\"https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com\"}"
 
-      - name: Terraform plan
+      - name: OpenTofu plan
         id: plan
         working-directory: infra
-        run: terraform plan -no-color 2>&1 | tee plan.txt
+        run: tofu plan -no-color 2>&1 | tee plan.txt
         continue-on-error: true
 
       - name: Comment plan on PR
@@ -58,7 +63,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: `### Terraform Plan\n\`\`\`\n${truncated}\n\`\`\``
+              body: `### OpenTofu Plan\n\`\`\`\n${truncated}\n\`\`\``
             })
 
       - name: Fail if plan errored

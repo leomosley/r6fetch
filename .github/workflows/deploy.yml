@@ -28,27 +28,35 @@ jobs:
               - 'apps/web/**'
               - 'packages/**'
 
-  # ── Terraform apply (infra changes only) ─────────────────────────────────────
+  # ── OpenTofu apply (infra changes only) ────────────────────────────────────
   deploy-infra:
-    name: Terraform apply
+    name: OpenTofu apply
     needs: changes
     if: needs.changes.outputs.infra == 'true'
     runs-on: ubuntu-latest
     env:
-      TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN }}
+      # R2 backend credentials (S3-compatible)
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      # Terraform variables
       TF_VAR_cloudflare_api_token: ${{ secrets.CF_API_TOKEN }}
       TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
       TF_VAR_cloudflare_zone_id: ${{ secrets.CF_ZONE_ID }}
       TF_VAR_r6data_api_key: ${{ secrets.R6DATA_API_KEY }}
     steps:
       - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
-      - name: Terraform init
+
+      - uses: opentofu/setup-opentofu@v1
+
+      - name: OpenTofu init
         working-directory: infra
-        run: terraform init
-      - name: Terraform apply
+        run: |
+          tofu init \
+            -backend-config="endpoints={s3=\"https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com\"}"
+
+      - name: OpenTofu apply
         working-directory: infra
-        run: terraform apply -auto-approve
+        run: tofu apply -auto-approve
 
   # ── Build web → api/public, then deploy Worker ───────────────────────────────
   deploy-api:

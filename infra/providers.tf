@@ -1,9 +1,18 @@
 terraform {
-  cloud {
-    organization = "PLACEHOLDER_TF_CLOUD_ORG"
-    workspaces {
-      name = "r6fetch"
-    }
+  # Cloudflare R2 backend (S3-compatible)
+  # Initialize with: tofu init -backend-config=backend.conf
+  # CI/CD passes credentials via AWS_ACCESS_KEY_ID & AWS_SECRET_ACCESS_KEY
+  backend "s3" {
+    bucket = "r6fetch-tfstate"
+    key    = "terraform.tfstate"
+    region = "auto"
+
+    # R2 doesn't support these features
+    skip_credentials_validation = true
+    skip_requesting_account_id  = true
+    skip_metadata_api_check     = true
+    skip_region_validation      = true
+    skip_s3_checksum            = true
   }
 
   required_providers {
