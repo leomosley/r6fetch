@@ -5,10 +5,10 @@ Rainbow Six Siege stats in your terminal.
 ![alt text](docs/image.png)
 
 ```
-curl r6.mosly.dev/pc/username
+curl r6fetch.cc/pc/username
 ```
 
-Supports `pc`, `ps`, and `xbox`. Run `curl r6.mosly.dev/setup | sh` to save a default player.
+Supports `pc`, `ps`, and `xbox`. Run `curl r6fetch.cc/setup | sh` to save a default player.
 
 ## License
 

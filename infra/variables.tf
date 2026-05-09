@@ -10,7 +10,7 @@ variable "cloudflare_account_id" {
 }
 
 variable "cloudflare_zone_id" {
-  description = "Cloudflare zone ID for mosly.dev"
+  description = "Cloudflare zone ID for r6fetch.cc"
   type        = string
 }
 
@@ -21,7 +21,7 @@ variable "r6data_api_key" {
 }
 
 variable "domain" {
-  description = "Public domain for the r6fetch API (e.g. r6.mosly.dev)"
+  description = "Public domain for the r6fetch API"
   type        = string
-  default     = "r6.mosly.dev"
+  default     = "r6fetch.cc"
 }
