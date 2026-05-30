@@ -9,7 +9,7 @@
     "typecheck": "astro check"
   },
   "dependencies": {
-    "astro": "^5.7.3",
+    "astro": "^6.4.2",
     "@r6fetch/renderer": "*"
   },
   "devDependencies": {
