@@ -10,6 +10,15 @@ resource "cloudflare_workers_kv_namespace" "cache" {
 
 # API key stored as a Worker secret (never appears in state in plaintext
 # because Cloudflare secrets are write-only from the API perspective).
+resource "cloudflare_worker_secret" "stats_cc_api_key" {
+  account_id  = var.cloudflare_account_id
+  script_name = "r6fetch-api"
+  name        = "STATS_CC_API_KEY"
+  secret_text = var.stats_cc_api_key
+}
+
+# Keep the previous resource address and binding for one rollout so OpenTofu
+# only adds the new secret while the currently deployed Worker remains live.
 resource "cloudflare_worker_secret" "r6data_api_key" {
   account_id  = var.cloudflare_account_id
   script_name = "r6fetch-api"

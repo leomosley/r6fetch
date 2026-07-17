@@ -1,5 +1,5 @@
 # Local development secrets for Wrangler
 # Copy this file to .dev.vars and fill in your values.
 
-R6DATA_API_KEY=your-r6data-api-key
+STATS_CC_API_KEY=your-stats-cc-api-key
 DOMAIN=localhost:8787
