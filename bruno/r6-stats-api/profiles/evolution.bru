@@ -1,0 +1,16 @@
+meta {
+  name: Get Profile - evolution
+  type: http
+  seq: 5
+}
+
+get {
+  url: https://r6.stats.cc/v2/profiles/pc/evolution
+  body: none
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{STATS_CC_API_KEY}}
+  User-Agent: r6fetch.cc
+}

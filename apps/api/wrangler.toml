@@ -24,8 +24,9 @@ preview_id = "PLACEHOLDER_KV_PREVIEW_ID"
 
 [vars]
 CACHE_TTL_SECONDS = "300"
+CACHE_ENABLED = "true"
 DOMAIN = "r6fetch.cc"
-# R6DATA_API_KEY is stored as a Cloudflare Worker secret — never in wrangler.toml
+# STATS_CC_API_KEY is stored as a Cloudflare Worker secret - never in wrangler.toml
 # For local dev, set it in apps/api/.dev.vars (copy from .dev.vars.example)
 
 [dev]

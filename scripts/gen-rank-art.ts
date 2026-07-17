@@ -47,7 +47,7 @@ const HEIGHT = 18;
 const RANKS_DIR = join(import.meta.dir, "../packages/renderer/src/ranks");
 const OUT_FILE = join(import.meta.dir, "../packages/renderer/src/rank-art-data.ts");
 
-/** Ordered to match tier indices 0–36 in RANK_NAMES. */
+/** Ordered to match tier indices 0–40 in RANK_NAMES. */
 const RANK_SLUGS = [
   "unranked",
   "copper-v",
@@ -85,7 +85,11 @@ const RANK_SLUGS = [
   "diamond-iii",
   "diamond-ii",
   "diamond-i",
-  "champion-star",
+  "champion-v",
+  "champion-iv",
+  "champion-iii",
+  "champion-ii",
+  "champion-i",
 ] as const;
 
 // ── braille bit mapping ───────────────────────────────────────────────────────
@@ -96,6 +100,15 @@ const BRAILLE_BITS: readonly (readonly number[])[] = [
   [0x04, 0x20], // row 2: left dot3, right dot6
   [0x40, 0x80], // row 3: left dot7, right dot8
 ];
+
+// ── config ────────────────────────────────────────────────────────────────────
+
+/**
+ * Alpha threshold for considering a pixel as "visible".
+ * Higher values filter out shadow/glow effects around the badge.
+ * The new v7 rank images have shadows that appear washed out at low thresholds.
+ */
+const ALPHA_THRESHOLD = 160;
 
 // ── dominant colour extraction ────────────────────────────────────────────────
 
@@ -138,7 +151,7 @@ async function extractDominantColor(filePath: string): Promise<[number, number, 
       g = data[i * 4 + 1]!,
       b = data[i * 4 + 2]!,
       a = data[i * 4 + 3]!;
-    if (a < 32) continue;
+    if (a < ALPHA_THRESHOLD) continue;
 
     sumR += r;
     sumG += g;
@@ -198,7 +211,7 @@ async function imageToAnsiLines(filePath: string): Promise<string[]> {
             b = data[i + 2]!,
             a = data[i + 3]!;
 
-          if (a >= 32) {
+          if (a >= ALPHA_THRESHOLD) {
             bits |= BRAILLE_BITS[dr]![dc]!;
             sumR += r;
             sumG += g;
@@ -265,7 +278,7 @@ async function main() {
 //
 // Tiers: 0 = Unranked, 1-5 = Copper, 6-10 = Bronze, 11-15 = Silver,
 //        16-20 = Gold, 21-25 = Platinum, 26-30 = Emerald,
-//        31-35 = Diamond, 36 = Champion
+//        31-35 = Diamond, 36-40 = Champion
 
 /** Visual character width of every art line. */
 export const ART_WIDTH = ${WIDTH};
@@ -279,7 +292,7 @@ ${colorEntries}
 ];
 
 /**
- * Pre-coloured ANSI braille art indexed by rank tier (0–36).
+ * Pre-coloured ANSI braille art indexed by rank tier (0–40).
  * Each inner array has ${HEIGHT} lines × ${WIDTH} chars (${pw}×${ph} effective pixels).
  */
 export const RANK_ART_MAP: readonly (readonly string[])[] = [

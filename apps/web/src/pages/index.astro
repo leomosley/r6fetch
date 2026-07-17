@@ -41,7 +41,11 @@ const RANK_NAMES = [
   "Diamond III",
   "Diamond II",
   "Diamond I",
-  "Champion",
+  "Champion V",
+  "Champion IV",
+  "Champion III",
+  "Champion II",
+  "Champion I",
 ];
 
 // Convert ANSI escape codes to HTML with each character in its own cell
@@ -95,8 +99,8 @@ const rankArtHtml = RANK_ART_MAP.map((lines: readonly string[], tier: number) =>
   html: processRankArt(lines),
 }));
 
-// Select a diverse set of ranks for the marquee (skip unranked and some similar ones)
-const selectedTiers = [5, 10, 15, 20, 25, 30, 35, 36]; // One from each tier + champion
+// Select Division I art from each rank for the marquee.
+const selectedTiers = [5, 10, 15, 20, 25, 30, 35, 40];
 const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
 ---
 

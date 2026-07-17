@@ -1,4 +1,4 @@
-// RGB colours per rank tier group, matching r6data.eu's rank palette
+// RGB colours per rank tier group.
 
 export interface Rgb {
   r: number;
@@ -29,7 +29,7 @@ export const RANK_COLORS: Record<RankGroup, Rgb> = {
   champion: { r: 255, g: 229, b: 102 },
 };
 
-/** Map a rank tier (0–36) to its colour group */
+/** Map a rank tier (0–40) to its colour group */
 export function tierToGroup(tier: number): RankGroup {
   if (tier === 0) return "unranked";
   if (tier <= 5) return "copper";
@@ -39,5 +39,5 @@ export function tierToGroup(tier: number): RankGroup {
   if (tier <= 25) return "platinum";
   if (tier <= 30) return "emerald";
   if (tier <= 35) return "diamond";
-  return "champion";
+  return "champion"; // tiers 36-40
 }

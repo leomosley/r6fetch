@@ -10,9 +10,6 @@
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "r6-data.js": "^3.1.1"
-  },
   "devDependencies": {
     "typescript": "^5.7.3"
   }

@@ -5,21 +5,35 @@ import type { Bindings } from "~/bindings";
 
 const CACHE_KEY_PREFIX = "stats:";
 
+let client: ReturnType<typeof createClient> | null = null;
+let clientApiKey: string | null = null;
+
+function getClient(apiKey: string) {
+  if (!client || clientApiKey !== apiKey) {
+    client = createClient(apiKey);
+    clientApiKey = apiKey;
+  }
+  return client;
+}
+
 export async function statsRoute(c: Context<{ Bindings: Bindings }>) {
   const platform = c.req.param("platform") ?? "";
   const username = c.req.param("username") ?? "";
   const cacheKey = `${CACHE_KEY_PREFIX}${platform}:${username.toLowerCase()}`;
   const ttl = parseInt(c.env.CACHE_TTL_SECONDS, 10) || 300;
+  const cacheEnabled = c.env.CACHE_ENABLED !== "false";
 
-  const cached = await c.env.CACHE.get(cacheKey);
-  if (cached) {
-    return c.text(cached, 200, {
-      "X-Cache": "HIT",
-      "Cache-Control": `public, max-age=${ttl}`,
-    });
+  if (cacheEnabled) {
+    const cached = await c.env.CACHE.get(cacheKey);
+    if (cached) {
+      return c.text(cached, 200, {
+        "X-Cache": "HIT",
+        "Cache-Control": `public, max-age=${ttl}`,
+      });
+    }
   }
 
-  const client = createClient(c.env.R6DATA_API_KEY);
+  const client = getClient(c.env.STATS_CC_API_KEY);
 
   let output: string;
   try {
@@ -41,10 +55,12 @@ export async function statsRoute(c: Context<{ Bindings: Bindings }>) {
     throw err;
   }
 
-  await c.env.CACHE.put(cacheKey, output, { expirationTtl: ttl });
+  if (cacheEnabled) {
+    await c.env.CACHE.put(cacheKey, output, { expirationTtl: ttl });
+  }
 
   return c.text(output, 200, {
-    "X-Cache": "MISS",
-    "Cache-Control": `public, max-age=${ttl}`,
+    "X-Cache": cacheEnabled ? "MISS" : "DISABLED",
+    "Cache-Control": cacheEnabled ? `public, max-age=${ttl}` : "no-store",
   });
 }

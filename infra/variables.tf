@@ -14,8 +14,14 @@ variable "cloudflare_zone_id" {
   type        = string
 }
 
+variable "stats_cc_api_key" {
+  description = "API key for r6.stats.cc"
+  type        = string
+  sensitive   = true
+}
+
 variable "r6data_api_key" {
-  description = "API key for r6data.eu"
+  description = "Legacy API key retained for the provider migration rollout"
   type        = string
   sensitive   = true
 }

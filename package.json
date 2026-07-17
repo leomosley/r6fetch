@@ -13,7 +13,8 @@
     "dev:api": "turbo run dev --filter=@r6fetch/api",
     "dev:web": "turbo run dev --filter=@r6fetch/web",
     "dev:full": "turbo run build --filter=@r6fetch/web && turbo run dev --filter=@r6fetch/api",
-    "gen:rank-art": "bun scripts/gen-rank-art.ts"
+    "gen:rank-art": "bun scripts/gen-rank-art.ts",
+    "bruno:r6-stats": "bun scripts/run-bruno.ts"
   },
   "devDependencies": {
     "@types/sharp": "^0.32.0",

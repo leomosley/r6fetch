@@ -1,7 +1,7 @@
 import type { PlayerProfile } from "@r6fetch/r6-client";
-import { getRankArt, ART_WIDTH } from "~/rank-art";
-import { buildStatLines } from "~/stat-panel";
-import { padRight } from "~/ansi";
+import { getRankArt, ART_WIDTH } from "./rank-art";
+import { buildStatLines } from "./stat-panel";
+import { padRight } from "./ansi";
 
 const GAP = "    ";
 
@@ -28,6 +28,6 @@ export function render(profile: PlayerProfile): string {
   return `\n${rows.join("\n")}\n\n`;
 }
 
-export { getRankArt } from "~/rank-art";
-export { buildStatLines } from "~/stat-panel";
-export { RANK_ART_MAP, RANK_COLORS_MAP, ART_WIDTH } from "~/rank-art-data";
+export { getRankArt } from "./rank-art";
+export { buildStatLines } from "./stat-panel";
+export { RANK_ART_MAP, RANK_COLORS_MAP, ART_WIDTH } from "./rank-art-data";

@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "R6 Stats API",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}

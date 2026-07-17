@@ -46,6 +46,7 @@ jobs:
       TF_VAR_cloudflare_api_token: ${{ secrets.CF_API_TOKEN }}
       TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
       TF_VAR_cloudflare_zone_id: ${{ secrets.CF_ZONE_ID }}
+      TF_VAR_stats_cc_api_key: ${{ secrets.STATS_CC_API_KEY }}
       TF_VAR_r6data_api_key: ${{ secrets.R6DATA_API_KEY }}
     steps:
       - uses: actions/checkout@v4
@@ -69,7 +70,7 @@ jobs:
   deploy-api:
     name: Deploy Worker
     needs: [changes, deploy-infra]
-    if: always() && (needs.changes.outputs.api == 'true' || needs.changes.outputs.web == 'true')
+    if: always() && (needs.changes.outputs.api == 'true' || needs.changes.outputs.web == 'true') && (needs.deploy-infra.result == 'success' || needs.deploy-infra.result == 'skipped')
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}

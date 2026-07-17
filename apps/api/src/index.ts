@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { isValidPlatform } from "@r6fetch/r6-client";
 import { statsRoute } from "~/routes/stats";
 import { setupRoute } from "~/routes/setup";
+import { testRoute } from "~/routes/test";
 import type { Bindings } from "~/bindings";
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -43,6 +44,16 @@ app.get("/", async (c) => {
 });
 
 app.get("/setup", setupRoute);
+
+// Test route for previewing rank art (local dev only)
+app.get("/test/:rank/:tier", (c) => {
+  const domain = c.env.DOMAIN ?? "";
+  const isLocalDev = domain.includes("localhost") || domain.includes("127.0.0.1");
+  if (!isLocalDev) {
+    return c.env.ASSETS.fetch(c.req.raw);
+  }
+  return testRoute(c);
+});
 
 app.get("/:platform/:username", async (c) => {
   const platform = c.req.param("platform");
