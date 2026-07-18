@@ -1,10 +1,9 @@
-export type Platform = "pc" | "playstation" | "xbox";
+export type Platform = "pc" | "ps" | "xbox";
 
 export interface RankInfo {
   name: string;
   tier: number;
   rp: number;
-  /** Champion position (only set if rank is Champion) */
   champNumber?: number;
 }
 
@@ -13,11 +12,8 @@ export interface PlayerProfile {
   platform: Platform;
   level: number;
   currentRank: RankInfo;
-  /** Peak rank for the current season */
   peakRankSeason: RankInfo;
-  /** Peak rank across all seasons */
   peakRankAllTime: RankInfo;
-  /** Global leaderboard position (only included if ≤10,000) */
   leaderboardPosition: number | null;
   kd: number;
   winRate: number;
