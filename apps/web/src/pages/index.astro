@@ -1,62 +1,23 @@
 ---
-import { RANK_ART_MAP, RANK_COLORS_MAP } from "@r6fetch/renderer";
+import { RANK_ART_MAP } from "@r6fetch/renderer";
 
 const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
 
-// Rank names for display
-const RANK_NAMES = [
-  "Unranked",
-  "Copper V",
-  "Copper IV",
-  "Copper III",
-  "Copper II",
-  "Copper I",
-  "Bronze V",
-  "Bronze IV",
-  "Bronze III",
-  "Bronze II",
-  "Bronze I",
-  "Silver V",
-  "Silver IV",
-  "Silver III",
-  "Silver II",
-  "Silver I",
-  "Gold V",
-  "Gold IV",
-  "Gold III",
-  "Gold II",
-  "Gold I",
-  "Platinum V",
-  "Platinum IV",
-  "Platinum III",
-  "Platinum II",
-  "Platinum I",
-  "Emerald V",
-  "Emerald IV",
-  "Emerald III",
-  "Emerald II",
-  "Emerald I",
-  "Diamond V",
-  "Diamond IV",
-  "Diamond III",
-  "Diamond II",
-  "Diamond I",
-  "Champion V",
-  "Champion IV",
-  "Champion III",
-  "Champion II",
-  "Champion I",
-];
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-// Convert ANSI escape codes to HTML with each character in its own cell
 function ansiToHtml(line: string): string {
-  // Parse ANSI and extract characters with their colors
   const chars: { char: string; color?: string }[] = [];
   let currentColor: string | undefined;
   let i = 0;
 
   while (i < line.length) {
-    // Check for ANSI escape sequence
     if (line[i] === "\u001b" && line[i + 1] === "[") {
       const end = line.indexOf("m", i);
       if (end !== -1) {
@@ -75,33 +36,28 @@ function ansiToHtml(line: string): string {
     i++;
   }
 
-  // Build HTML with each character in its own fixed-width cell
   return chars
     .map(({ char, color }) => {
       const style = color ? `color:rgb(${color.replace(/;/g, ",")})` : "";
-      // Use a non-breaking space for regular spaces to prevent collapse
-      const displayChar = char === " " ? "\u00A0" : char;
+      const displayChar = char === " " ? "\u00A0" : escapeHtml(char);
       return `<span class="char"${style ? ` style="${style}"` : ""}>${displayChar}</span>`;
     })
     .join("");
 }
 
-// Process rank art - join lines with empty string since grid handles rows
 function processRankArt(lines: readonly string[]): string {
   return lines.map((line) => ansiToHtml(line)).join("");
 }
 
-// Process all rank art into HTML
-const rankArtHtml = RANK_ART_MAP.map((lines: readonly string[], tier: number) => ({
-  tier,
-  name: RANK_NAMES[tier],
-  color: RANK_COLORS_MAP[tier],
-  html: processRankArt(lines),
-}));
-
-// Select Division I art from each rank for the marquee.
 const selectedTiers = [5, 10, 15, 20, 25, 30, 35, 40];
-const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
+const marqueeRanks = selectedTiers.map((tier) => processRankArt(RANK_ART_MAP[tier] ?? []));
+const repeatedRanks = [...marqueeRanks, ...marqueeRanks, ...marqueeRanks];
+const reversedRanks = [...marqueeRanks].reverse();
+const marqueeRows = [
+  { direction: "left", ranks: repeatedRanks },
+  { direction: "right", ranks: [...reversedRanks, ...reversedRanks, ...reversedRanks] },
+  { direction: "left-slow", ranks: repeatedRanks },
+];
 ---
 
 <!doctype html>
@@ -118,70 +74,29 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=block"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
   </head>
-  <body class="loading">
-    <!-- Marquee background -->
+  <body>
     <div class="marquee-container" aria-hidden="true">
-      <!-- Row 1 - moves left -->
-      <div class="marquee-row" data-direction="left">
-        <div class="marquee-track">
-          {
-            [...marqueeRanks, ...marqueeRanks, ...marqueeRanks].map((rank) => (
-              <div
-                class="rank-block"
-                style={`--rank-color: ${rank.color[0]}, ${rank.color[1]}, ${rank.color[2]}`}
-              >
-                <div class="rank-art" set:html={rank.html} />
-              </div>
-            ))
-          }
-        </div>
-      </div>
-
-      <!-- Row 2 - moves right -->
-      <div class="marquee-row" data-direction="right">
-        <div class="marquee-track">
-          {
-            [
-              ...marqueeRanks.slice().reverse(),
-              ...marqueeRanks.slice().reverse(),
-              ...marqueeRanks.slice().reverse(),
-            ].map((rank) => (
-              <div
-                class="rank-block"
-                style={`--rank-color: ${rank.color[0]}, ${rank.color[1]}, ${rank.color[2]}`}
-              >
-                <div class="rank-art" set:html={rank.html} />
-              </div>
-            ))
-          }
-        </div>
-      </div>
-
-      <!-- Row 3 - moves left (slower) -->
-      <div class="marquee-row" data-direction="left-slow">
-        <div class="marquee-track">
-          {
-            [...marqueeRanks, ...marqueeRanks, ...marqueeRanks].map((rank) => (
-              <div
-                class="rank-block"
-                style={`--rank-color: ${rank.color[0]}, ${rank.color[1]}, ${rank.color[2]}`}
-              >
-                <div class="rank-art" set:html={rank.html} />
-              </div>
-            ))
-          }
-        </div>
-      </div>
+      {
+        marqueeRows.map(({ direction, ranks }) => (
+          <div class="marquee-row" data-direction={direction}>
+            <div class="marquee-track">
+              {ranks.map((html) => (
+                <div class="rank-block">
+                  <div class="rank-art" set:html={html} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      }
     </div>
 
-    <!-- Vignette overlay -->
     <div class="vignette" aria-hidden="true"></div>
 
-    <!-- Header -->
     <header class="header">
       <a href="https://mosly.dev" target="_blank" rel="noopener noreferrer" class="header-logo">
         <img src="/icon.png" alt="mosly.dev" width="32" height="32" />
@@ -201,6 +116,8 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
             fill="none"
             stroke="currentColor"
             stroke-width="2"
+            aria-hidden="true"
+            focusable="false"
           >
             <path d="M7 17L17 7M17 7H7M17 7V17"></path>
           </svg>
@@ -208,13 +125,18 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
       </nav>
     </header>
 
-    <!-- Main content -->
     <main class="main">
       <div class="content">
         <div class="content-backdrop" aria-hidden="true"></div>
         <h1 class="title"><span class="title-r6">r6</span>fetch</h1>
 
-        <button class="command" id="copyBtn" type="button" aria-label="Copy curl command">
+        <button
+          class="command"
+          id="copyBtn"
+          type="button"
+          aria-label="Copy curl command"
+          data-command={`curl ${DOMAIN}/pc/username`}
+        >
           <span class="command-text">
             <span class="prompt">$</span>
             <span class="curl"
@@ -223,13 +145,14 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
               ></span
             >
           </span>
-          <span class="copy-indicator" id="copyIndicator">
+          <span class="copy-indicator" aria-hidden="true">
             <svg
               class="copy-icon"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               stroke-width="2"
+              focusable="false"
             >
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -240,10 +163,12 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
               fill="none"
               stroke="currentColor"
               stroke-width="2.5"
+              focusable="false"
             >
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
           </span>
+          <span class="visually-hidden" id="copyStatus" aria-live="polite"></span>
         </button>
       </div>
     </main>
@@ -262,36 +187,34 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
   :root {
     --bg: #030305;
     --text: #f0f0f5;
-    --text-dim: #505060;
+    --text-dim: #858598;
     --mono: "JetBrains Mono", monospace;
-    --accent: 196, 13, 98;
+    --accent: 232, 47, 132;
   }
 
   html,
   body {
-    height: 100%;
-    overflow: hidden;
+    min-height: 100%;
+    overflow-x: hidden;
   }
 
   body {
     background: var(--bg);
     color: var(--text);
     font-family: var(--mono);
+    animation: page-in 0.4s ease both;
   }
 
-  /* Loading state - hide content until fonts loaded */
-  body.loading {
-    opacity: 0;
+  @keyframes page-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 
-  body.loaded {
-    opacity: 1;
-    transition: opacity 0.4s ease;
-  }
-
-  /* ═══════════════════════════════════════════════════
-     MARQUEE BACKGROUND
-     ═══════════════════════════════════════════════════ */
   .marquee-container {
     position: fixed;
     inset: 0;
@@ -348,11 +271,6 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
   }
 
   .rank-art {
-    /*
-     * Use a CSS grid approach: each character gets exactly 1ch width.
-     * This forces true monospace rendering regardless of the actual
-     * character widths in the font.
-     */
     font-family: var(--mono);
     font-size: 10px;
     line-height: 1.2;
@@ -360,7 +278,6 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
     display: grid;
     grid-template-columns: repeat(36, 1ch);
     grid-auto-rows: 1.2em;
-    /* Disable any font features that could affect width */
     font-variant-ligatures: none;
     font-feature-settings:
       "liga" 0,
@@ -382,9 +299,6 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
     overflow: hidden;
   }
 
-  /* ═══════════════════════════════════════════════════
-     VIGNETTE OVERLAY
-     ═══════════════════════════════════════════════════ */
   .vignette {
     position: fixed;
     inset: 0;
@@ -399,9 +313,6 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
     );
   }
 
-  /* ═══════════════════════════════════════════════════
-     HEADER
-     ═══════════════════════════════════════════════════ */
   .header {
     position: fixed;
     top: 0;
@@ -447,6 +358,7 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
     display: flex;
     align-items: center;
     gap: 0.25rem;
+    padding: 0.35rem 0;
   }
 
   .nav-link--docs {
@@ -472,13 +384,11 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
     stroke-width: 2.5;
   }
 
-  /* ═══════════════════════════════════════════════════
-     MAIN CONTENT
-     ═══════════════════════════════════════════════════ */
   .main {
     position: relative;
     z-index: 10;
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -534,9 +444,6 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
       0 0 120px rgba(var(--accent), 0.3);
   }
 
-  /* ═══════════════════════════════════════════════════
-     COMMAND BUTTON
-     ═══════════════════════════════════════════════════ */
   .command {
     display: inline-flex;
     align-items: center;
@@ -557,6 +464,7 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
     position: relative;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    max-width: calc(100vw - 2rem);
   }
 
   .command:hover {
@@ -572,6 +480,7 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
   .command-text {
     display: flex;
     gap: 0.5em;
+    min-width: 0;
   }
 
   .prompt {
@@ -580,6 +489,7 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
 
   .curl {
     color: var(--text);
+    overflow-wrap: anywhere;
   }
 
   .placeholder {
@@ -631,9 +541,25 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
     transform: scale(1);
   }
 
-  /* ═══════════════════════════════════════════════════
-     RESPONSIVE
-     ═══════════════════════════════════════════════════ */
+  .header-logo:focus-visible,
+  .nav-link:focus-visible,
+  .command:focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 4px;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   @media (max-width: 600px) {
     .marquee-container {
       gap: 0.5rem;
@@ -650,17 +576,21 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
     .command {
       padding: 0.75rem 1rem;
     }
+
+    .header {
+      padding: 1rem;
+    }
   }
 
-  /* ═══════════════════════════════════════════════════
-     REDUCED MOTION
-     ═══════════════════════════════════════════════════ */
   @media (prefers-reduced-motion: reduce) {
+    body {
+      animation: none;
+    }
+
     .marquee-track {
       animation: none;
     }
 
-    .cursor-glow,
     .command,
     .copy-icon,
     .check-icon {
@@ -669,156 +599,30 @@ const marqueeRanks = selectedTiers.map((tier) => rankArtHtml[tier]);
   }
 </style>
 
-<script is:inline define:vars={{ DOMAIN }}>
-  const copyBtn = document.getElementById("copyBtn");
-  const marqueeContainer = document.querySelector(".marquee-container");
+<script>
+  const copyButton = document.querySelector("#copyBtn");
+  const copyStatus = document.querySelector("#copyStatus");
 
-  // Distortion effect settings
-  const DISTORTION_RADIUS_BASE = 50;
-  const DISTORTION_RADIUS_VARIANCE = 30;
-  const GLITCH_CHARS = "!@#$%^&*()_+-=[]{}|;:',.<>?/\\`~░▒▓█▄▀■□▪▫";
+  if (copyButton instanceof HTMLButtonElement && copyStatus instanceof HTMLSpanElement) {
+    copyButton.addEventListener("click", async () => {
+      const command = copyButton.dataset.command;
 
-  // Store original character data
-  const charElements = [];
-  const originalChars = new Map();
-  const distortedChars = new Map();
-  const charRadiusOffsets = new Map();
-
-  // Track mouse position
-  let mouseX = -1000;
-  let mouseY = -1000;
-  let isMouseInWindow = false;
-  let rafId = null;
-
-  // Collect all character elements
-  function initDistortion() {
-    const chars = marqueeContainer.querySelectorAll(".char");
-    chars.forEach((el) => {
-      charElements.push(el);
-      originalChars.set(el, el.textContent);
-      // Give each character its own random radius offset for organic feel
-      charRadiusOffsets.set(el, (Math.random() - 0.5) * 2 * DISTORTION_RADIUS_VARIANCE);
-    });
-  }
-
-  // Get random glitch character
-  function getGlitchChar() {
-    return GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
-  }
-
-  // Restore a character to original
-  function restoreChar(el) {
-    if (distortedChars.has(el)) {
-      el.textContent = originalChars.get(el);
-      distortedChars.delete(el);
-    }
-  }
-
-  // Distort a character
-  function distortChar(el) {
-    if (!distortedChars.has(el)) {
-      distortedChars.set(el, true);
-    }
-    // Keep changing the glitch char for active effect
-    el.textContent = getGlitchChar();
-  }
-
-  // Update distortion effect (runs continuously via RAF)
-  function updateDistortion() {
-    if (!isMouseInWindow) {
-      rafId = requestAnimationFrame(updateDistortion);
-      return;
-    }
-
-    charElements.forEach((el) => {
-      const rect = el.getBoundingClientRect();
-      const charX = rect.left + rect.width / 2;
-      const charY = rect.top + rect.height / 2;
-
-      const dist = Math.sqrt((mouseX - charX) ** 2 + (mouseY - charY) ** 2);
-      const charRadius = DISTORTION_RADIUS_BASE + charRadiusOffsets.get(el);
-
-      if (dist < charRadius) {
-        // Probability of glitching based on distance (closer = more likely)
-        const probability = 1 - dist / charRadius;
-        if (Math.random() < probability * 0.8) {
-          distortChar(el);
-        }
-      } else {
-        restoreChar(el);
+      if (command === undefined) {
+        copyStatus.textContent = "Copy failed";
+        return;
       }
-    });
 
-    rafId = requestAnimationFrame(updateDistortion);
-  }
-
-  // Handle mouse movement - just update position
-  function handleMouseMove(e) {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-    isMouseInWindow = true;
-  }
-
-  // Restore all on mouse leave
-  function handleMouseLeave() {
-    isMouseInWindow = false;
-    mouseX = -1000;
-    mouseY = -1000;
-    distortedChars.forEach((_, el) => {
-      el.textContent = originalChars.get(el);
-    });
-    distortedChars.clear();
-  }
-
-  // Copy button handler
-  async function handleCopy() {
-    const command = `curl ${DOMAIN}/pc/username`;
-
-    try {
-      await navigator.clipboard.writeText(command);
-      copyBtn.classList.add("copied");
-
-      setTimeout(() => {
-        copyBtn.classList.remove("copied");
-      }, 2000);
-    } catch (err) {
-      // Fallback
-      const textArea = document.createElement("textarea");
-      textArea.value = command;
-      textArea.style.position = "fixed";
-      textArea.style.opacity = "0";
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-
-      copyBtn.classList.add("copied");
-      setTimeout(() => {
-        copyBtn.classList.remove("copied");
-      }, 2000);
-    }
-  }
-
-  // Initialize and set up event listeners
-  initDistortion();
-  document.addEventListener("mousemove", handleMouseMove);
-  document.addEventListener("mouseleave", handleMouseLeave);
-  copyBtn.addEventListener("click", handleCopy);
-
-  // Start the continuous distortion update loop
-  rafId = requestAnimationFrame(updateDistortion);
-
-  // Fade in after fonts loaded
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(() => {
-      document.body.classList.remove("loading");
-      document.body.classList.add("loaded");
-    });
-  } else {
-    // Fallback for browsers without font loading API
-    window.addEventListener("load", () => {
-      document.body.classList.remove("loading");
-      document.body.classList.add("loaded");
+      try {
+        await navigator.clipboard.writeText(command);
+        copyButton.classList.add("copied");
+        copyStatus.textContent = "Command copied";
+        window.setTimeout(() => {
+          copyButton.classList.remove("copied");
+          copyStatus.textContent = "";
+        }, 2000);
+      } catch {
+        copyStatus.textContent = "Copy failed";
+      }
     });
   }
 </script>
