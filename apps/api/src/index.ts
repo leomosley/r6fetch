@@ -7,13 +7,18 @@ import type { Bindings } from "~/bindings";
 
 const app = new Hono<{ Bindings: Bindings }>();
 
+function getOrigin(domain: string): string {
+  return isLocalDomain(domain) ? `http://${domain}` : `https://${domain}`;
+}
+
 function buildWelcome(domain: string): string {
+  const origin = getOrigin(domain);
   return `
   r6fetch — Rainbow Six Siege stats in your terminal
   ───────────────────────────────────────────────────
 
   Usage:
-    curl ${domain}/<platform>/<username>
+    curl ${origin}/<platform>/<username>
 
   Platforms:
     pc    — Ubisoft Connect
@@ -21,19 +26,31 @@ function buildWelcome(domain: string): string {
     xbox  — Xbox Live
 
   Examples:
-    curl ${domain}/pc/GamersClub
-    curl ${domain}/ps/Pengu
-    curl ${domain}/xbox/Beaulo
+    curl ${origin}/pc/GamersClub
+    curl ${origin}/ps/Pengu
+    curl ${origin}/xbox/Beaulo
 
   First time? Set up a default player:
-    curl ${domain}/setup | sh
+    curl -fsSL ${origin}/setup | sh
 
   Web: https://${domain}
 
 `;
 }
 
-app.get("/", async (c) => {
+function isLocalDomain(domain: string): boolean {
+  const hostname = domain.split(":", 1)[0];
+  return hostname === "localhost" || hostname === "127.0.0.1";
+}
+
+app.onError(() => {
+  return new Response("\n  r6fetch hit an unexpected error.\n  Try again in a moment.\n\n", {
+    status: 500,
+    headers: { "Content-Type": "text/plain; charset=UTF-8" },
+  });
+});
+
+app.get("/", (c) => {
   const ua = c.req.header("user-agent") ?? "";
 
   if (ua.toLowerCase().startsWith("curl")) {
@@ -45,21 +62,17 @@ app.get("/", async (c) => {
 
 app.get("/setup", setupRoute);
 
-// Test route for previewing rank art (local dev only)
 app.get("/test/:rank/:tier", (c) => {
-  const domain = c.env.DOMAIN ?? "";
-  const isLocalDev = domain.includes("localhost") || domain.includes("127.0.0.1");
-  if (!isLocalDev) {
+  if (!isLocalDomain(c.env.DOMAIN)) {
     return c.env.ASSETS.fetch(c.req.raw);
   }
   return testRoute(c);
 });
 
-app.get("/:platform/:username", async (c) => {
+app.get("/:platform/:username", (c) => {
   const platform = c.req.param("platform");
 
   if (!isValidPlatform(platform)) {
-    // Not a valid platform - try serving as static asset
     return c.env.ASSETS.fetch(c.req.raw);
   }
 
@@ -70,7 +83,6 @@ app.get("/:platform", (c) => {
   const platform = c.req.param("platform");
 
   if (!isValidPlatform(platform)) {
-    // Not a valid platform - try serving as static asset
     return c.env.ASSETS.fetch(c.req.raw);
   }
 
@@ -80,7 +92,7 @@ app.get("/:platform", (c) => {
   );
 });
 
-app.all("*", async (c) => {
+app.all("*", (c) => {
   return c.env.ASSETS.fetch(c.req.raw);
 });
 

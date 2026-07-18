@@ -1,7 +1,6 @@
 name = "r6fetch-api"
 main = "src/index.ts"
 compatibility_date = "2025-04-24"
-compatibility_flags = ["nodejs_compat"]
 workers_dev = false
 
 [observability.logs]
