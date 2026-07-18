@@ -1,0 +1,80 @@
+#!/bin/sh
+set -e
+
+CONFIG_DIR="$HOME/.config/r6fetch"
+CONFIG_FILE="$CONFIG_DIR/config"
+
+printf "\n  r6fetch setup\n  ─────────────\n\n"
+
+printf "  Platform (pc / ps / xbox): "
+if [ -t 0 ]; then
+  read -r platform
+else
+  read -r platform </dev/tty
+fi
+
+case "$platform" in
+  pc|ps|xbox) ;;
+  *) printf "\n  Error: platform must be pc, ps, or xbox\n\n" && exit 1 ;;
+esac
+
+printf "  Username: "
+if [ -t 0 ]; then
+  read -r username
+else
+  read -r username </dev/tty
+fi
+
+if [ -z "$username" ]; then
+  printf "\n  Error: username cannot be empty\n\n" && exit 1
+fi
+
+mkdir -p "$CONFIG_DIR"
+printf "PLATFORM=%s\nUSERNAME=%s\n" "$platform" "$username" > "$CONFIG_FILE"
+
+SHELL_RC="$HOME/.bashrc"
+SHELL_NAME="$(basename "$SHELL" 2>/dev/null || echo bash)"
+if [ "$SHELL_NAME" = "zsh" ] || [ -n "$ZSH_VERSION" ]; then
+  SHELL_RC="$HOME/.zshrc"
+fi
+
+if grep -q "# BEGIN r6fetch" "$SHELL_RC" 2>/dev/null; then
+  if ! grep -q "# END r6fetch" "$SHELL_RC" 2>/dev/null; then
+    printf "\n  Error: incomplete r6fetch block in %s\n\n" "$SHELL_RC"
+    exit 1
+  fi
+  TEMP_FILE="$(mktemp "$SHELL_RC.XXXXXX")"
+  sed '/# BEGIN r6fetch/,/# END r6fetch/d' "$SHELL_RC" > "$TEMP_FILE"
+  mv "$TEMP_FILE" "$SHELL_RC"
+fi
+
+cat >> "$SHELL_RC" << 'SHELLFUNC'
+
+# BEGIN r6fetch
+# r6fetch — Rainbow Six Siege stats in your terminal
+r6fetch() {
+  _platform="${1:-$(grep '^PLATFORM=' "$HOME/.config/r6fetch/config" 2>/dev/null | cut -d= -f2-)}"
+  _username="${2:-$(grep '^USERNAME=' "$HOME/.config/r6fetch/config" 2>/dev/null | cut -d= -f2-)}"
+  if [ -z "$_platform" ] || [ -z "$_username" ]; then
+    printf "r6fetch: no default configured. Run: curl -fsSL __R6FETCH_ORIGIN__/setup | sh\n"
+    return 1
+  fi
+  _encoded_username=""
+  _remaining_username="$_username"
+  LC_ALL=C
+  while [ -n "$_remaining_username" ]; do
+    _char="${_remaining_username%"${_remaining_username#?}"}"
+    case "$_char" in
+      [a-zA-Z0-9._~-]) _encoded_username="$_encoded_username$_char" ;;
+      *) _encoded_username="$_encoded_username$(printf '%%%02X' "'$_char")" ;;
+    esac
+    _remaining_username="${_remaining_username#?}"
+  done
+  curl "__R6FETCH_ORIGIN__/$_platform/$_encoded_username"
+}
+# END r6fetch
+SHELLFUNC
+
+printf "\n  Done! Config saved to %s\n" "$CONFIG_FILE"
+printf "  Run: source %s\n" "$SHELL_RC"
+printf "  Then: r6fetch\n\n"

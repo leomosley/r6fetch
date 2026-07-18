@@ -20,12 +20,6 @@ variable "stats_cc_api_key" {
   sensitive   = true
 }
 
-variable "r6data_api_key" {
-  description = "Legacy API key retained for the provider migration rollout"
-  type        = string
-  sensitive   = true
-}
-
 variable "domain" {
   description = "Public domain for the r6fetch API"
   type        = string

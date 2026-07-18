@@ -1,4 +1,4 @@
 node_modules
 dist
 .wrangler
-packages/renderer/src/rank-art-data.ts
+apps/web/src/rank-art-data.ts

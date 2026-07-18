@@ -4,7 +4,7 @@
  *
  * Converts rank WebP images in packages/renderer/src/ranks/ into coloured
  * braille art and writes the result to:
- *   packages/renderer/src/rank-art-data.ts
+ *   apps/web/src/rank-art-data.ts
  *
  * Braille technique:
  *   Each Unicode braille cell (U+2800–U+28FF) encodes a 2×4 dot grid:
@@ -45,7 +45,7 @@ const WIDTH = 36;
 const HEIGHT = 18;
 
 const RANKS_DIR = join(import.meta.dir, "../packages/renderer/src/ranks");
-const OUT_FILE = join(import.meta.dir, "../packages/renderer/src/rank-art-data.ts");
+const OUT_FILE = join(import.meta.dir, "../apps/web/src/rank-art-data.ts");
 
 const CHAMPION_NUMBER_SAMPLES = [1, 90, 1234, 5678] as const;
 const CHAMPION_NUMBER_URL = (position: number) =>
