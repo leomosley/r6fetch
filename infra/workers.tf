@@ -17,15 +17,6 @@ resource "cloudflare_worker_secret" "stats_cc_api_key" {
   secret_text = var.stats_cc_api_key
 }
 
-# Keep the previous resource address and binding for one rollout so OpenTofu
-# only adds the new secret while the currently deployed Worker remains live.
-resource "cloudflare_worker_secret" "r6data_api_key" {
-  account_id  = var.cloudflare_account_id
-  script_name = "r6fetch-api"
-  name        = "R6DATA_API_KEY"
-  secret_text = var.r6data_api_key
-}
-
 # Custom domain route: <domain> → r6fetch-api worker
 resource "cloudflare_worker_domain" "r6" {
   account_id = var.cloudflare_account_id

@@ -13,7 +13,12 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.2.0
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.92.0
+          targets: wasm32-unknown-unknown
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -39,7 +44,6 @@ jobs:
       TF_VAR_cloudflare_account_id: ${{ secrets.CF_ACCOUNT_ID }}
       TF_VAR_cloudflare_zone_id: ${{ secrets.CF_ZONE_ID }}
       TF_VAR_stats_cc_api_key: ${{ secrets.STATS_CC_API_KEY }}
-      TF_VAR_r6data_api_key: ${{ secrets.R6DATA_API_KEY }}
     steps:
       - uses: actions/checkout@v4
 

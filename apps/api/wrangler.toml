@@ -1,7 +1,11 @@
 name = "r6fetch-api"
-main = "src/index.ts"
+main = "build/worker/shim.mjs"
 compatibility_date = "2025-04-24"
 workers_dev = false
+
+[build]
+command = "sh ../../scripts/build-rust-worker.sh"
+watch_dir = ["../../packages/r6-client/src", "../../packages/renderer/src", "./src"]
 
 [observability.logs]
 enabled = true

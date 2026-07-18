@@ -2,18 +2,21 @@
   "name": "r6fetch",
   "private": true,
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/*"
   ],
   "scripts": {
     "build": "turbo run build",
-    "typecheck": "turbo run typecheck",
+    "typecheck": "bun run typecheck:ts && bun run typecheck:rust",
+    "typecheck:ts": "turbo run typecheck",
+    "typecheck:rust": "cargo check -p r6-client -p renderer && cargo check -p r6-api --target wasm32-unknown-unknown",
+    "test:rust": "cargo test -p r6-client -p renderer",
     "lint": "turbo run lint",
     "dev": "turbo run dev",
     "dev:api": "turbo run dev --filter=@r6fetch/api",
     "dev:web": "turbo run dev --filter=@r6fetch/web",
     "dev:full": "turbo run build --filter=@r6fetch/web && turbo run dev --filter=@r6fetch/api",
-    "gen:rank-art": "bun scripts/gen-rank-art.ts",
+    "gen:rank-art": "bun scripts/gen-rank-art.ts && bun scripts/gen-rust-rank-art.ts",
+    "gen:rust-rank-art": "bun scripts/gen-rust-rank-art.ts",
     "bruno:r6-stats": "bun scripts/run-bruno.ts"
   },
   "devDependencies": {
