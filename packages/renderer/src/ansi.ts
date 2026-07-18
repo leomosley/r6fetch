@@ -1,47 +1,109 @@
-// ANSI escape code helpers
+export const RESET = "\u001b[0m";
+export const BOLD = "\u001b[1m";
+export const DIM = "\u001b[2m";
 
-export const RESET = "\x1b[0m";
-export const BOLD = "\x1b[1m";
-export const DIM = "\x1b[2m";
-
-/** 24-bit foreground colour */
 export function fg(r: number, g: number, b: number): string {
-  return `\x1b[38;2;${r};${g};${b}m`;
+  return `\u001b[38;2;${r};${g};${b}m`;
 }
 
-/** 24-bit background colour */
-export function bg(r: number, g: number, b: number): string {
-  return `\x1b[48;2;${r};${g};${b}m`;
+function isControlCharacter(codePoint: number): boolean {
+  return codePoint <= 0x1f || (codePoint >= 0x7f && codePoint <= 0x9f);
 }
 
-/** Strip all ANSI escape codes to measure visual width */
-export function stripAnsi(str: string): string {
-  // eslint-disable-next-line no-control-regex
-  return str.replace(/\x1b\[[0-9;]*m/g, "");
+function isZeroWidth(codePoint: number): boolean {
+  return (
+    codePoint === 0x200b ||
+    codePoint === 0x200c ||
+    codePoint === 0x200d ||
+    (codePoint >= 0x0300 && codePoint <= 0x036f) ||
+    (codePoint >= 0x1ab0 && codePoint <= 0x1aff) ||
+    (codePoint >= 0x1dc0 && codePoint <= 0x1dff) ||
+    (codePoint >= 0x20d0 && codePoint <= 0x20ff) ||
+    (codePoint >= 0xfe00 && codePoint <= 0xfe0f) ||
+    (codePoint >= 0xfe20 && codePoint <= 0xfe2f)
+  );
 }
 
-/** Visual character width (excluding ANSI codes) */
-export function visualWidth(str: string): number {
-  return stripAnsi(str).length;
+function isEmojiModifier(codePoint: number): boolean {
+  return codePoint >= 0x1f3fb && codePoint <= 0x1f3ff;
 }
 
-/** Pad a string on the right to a given visual width */
-export function padRight(str: string, width: number): string {
-  const vw = visualWidth(str);
-  return str + " ".repeat(Math.max(0, width - vw));
+function isWide(codePoint: number): boolean {
+  return (
+    codePoint >= 0x1100 &&
+    (codePoint <= 0x115f ||
+      codePoint === 0x2329 ||
+      codePoint === 0x232a ||
+      (codePoint >= 0x2e80 && codePoint <= 0xa4cf) ||
+      (codePoint >= 0xac00 && codePoint <= 0xd7a3) ||
+      (codePoint >= 0xf900 && codePoint <= 0xfaff) ||
+      (codePoint >= 0xfe10 && codePoint <= 0xfe19) ||
+      (codePoint >= 0xfe30 && codePoint <= 0xfe6f) ||
+      (codePoint >= 0xff00 && codePoint <= 0xff60) ||
+      (codePoint >= 0xffe0 && codePoint <= 0xffe6) ||
+      (codePoint >= 0x1f300 && codePoint <= 0x1faff) ||
+      (codePoint >= 0x20000 && codePoint <= 0x3fffd))
+  );
 }
 
-/** Pad a string on the left to a given visual width */
-export function padLeft(str: string, width: number): string {
-  const vw = visualWidth(str);
-  return " ".repeat(Math.max(0, width - vw)) + str;
+export function stripAnsi(value: string): string {
+  return value.replace(/\u001b\[[0-?]*[ -/]*[@-~]/g, "");
 }
 
-/** Centre a string within a given visual width */
-export function centre(str: string, width: number): string {
-  const vw = visualWidth(str);
-  const total = Math.max(0, width - vw);
-  const left = Math.floor(total / 2);
-  const right = total - left;
-  return " ".repeat(left) + str + " ".repeat(right);
+export function sanitizeTerminalText(value: string): string {
+  return Array.from(value)
+    .filter((character) => !isControlCharacter(character.codePointAt(0) ?? 0))
+    .join("");
+}
+
+function getTextClusters(value: string): string[] {
+  const clusters: string[] = [];
+  for (const character of value) {
+    const codePoint = character.codePointAt(0) ?? 0;
+    const previous = clusters.at(-1);
+    if (
+      previous !== undefined &&
+      (isZeroWidth(codePoint) || isEmojiModifier(codePoint) || previous.endsWith("\u200d"))
+    ) {
+      clusters[clusters.length - 1] = `${previous}${character}`;
+    } else {
+      clusters.push(character);
+    }
+  }
+  return clusters;
+}
+
+export function visualWidth(value: string): number {
+  let width = 0;
+  for (const cluster of getTextClusters(stripAnsi(value))) {
+    let clusterWidth = 0;
+    for (const character of cluster) {
+      const codePoint = character.codePointAt(0) ?? 0;
+      if (!isControlCharacter(codePoint) && !isZeroWidth(codePoint)) {
+        clusterWidth = Math.max(clusterWidth, isWide(codePoint) ? 2 : 1);
+      }
+    }
+    width += clusterWidth;
+  }
+  return width;
+}
+
+export function truncateText(value: string, maxWidth: number): string {
+  const sanitized = sanitizeTerminalText(value);
+  if (visualWidth(sanitized) <= maxWidth) {
+    return sanitized;
+  }
+
+  let result = "";
+  for (const cluster of getTextClusters(sanitized)) {
+    if (visualWidth(`${result}${cluster}…`) > maxWidth) {
+      break;
+    }
+    result += cluster;
+  }
+  return `${result}…`;
+}
+
+export function padRight(value: string, width: number): string {
+  return value + " ".repeat(Math.max(0, width - visualWidth(value)));
 }

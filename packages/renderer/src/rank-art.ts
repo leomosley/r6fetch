@@ -7,35 +7,37 @@ import {
 
 export { ART_WIDTH };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Public API
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Returns pre-coloured ANSI ASCII-art lines for the given rank tier.
- * Tiers: 0 = Unranked, 1-5 = Copper, 6-10 = Bronze, 11-15 = Silver,
- *        16-20 = Gold, 21-25 = Platinum, 26-30 = Emerald,
- *        31-35 = Diamond, 36-40 = Champion
- * Regenerate art: bun gen:rank-art
- */
-const WHITE = "\x1b[38;2;255;255;255m";
-const RESET = "\x1b[0m";
+const WHITE = "\u001b[38;2;255;255;255m";
+const RESET = "\u001b[0m";
 const DIGIT_GAP = 1;
-const BRAILLE_BITS = [
+const BRAILLE_BITS: readonly (readonly [number, number])[] = [
   [1, 8],
   [2, 16],
   [4, 32],
   [64, 128],
-] as const;
+];
+
+export function normalizeTier(tier: number): number {
+  return Number.isFinite(tier) ? Math.max(0, Math.min(40, Math.round(tier))) : 0;
+}
 
 function getChampionNumberArt(position: number): string[] {
-  const digits = Math.max(1, Math.min(9999, Math.trunc(position)))
+  const digits = position
     .toString()
     .split("")
-    .map((digit) => CHAMPION_DIGIT_MASKS[Number(digit)]!);
-  const height = digits[0]!.length;
+    .flatMap((digit) => {
+      const mask = CHAMPION_DIGIT_MASKS[Number(digit)];
+      return mask === undefined ? [] : [mask];
+    });
+  const firstDigit = digits[0];
+  if (firstDigit === undefined) {
+    return [...(RANK_ART_MAP[40] ?? [])];
+  }
+
+  const height = firstDigit.length;
   const width =
-    digits.reduce((total, digit) => total + digit[0]!.length, 0) + DIGIT_GAP * (digits.length - 1);
+    digits.reduce((total, digit) => total + (digit[0]?.length ?? 0), 0) +
+    DIGIT_GAP * (digits.length - 1);
   const startX = Math.floor((ART_WIDTH * 2 - width) / 2);
   const startY = 25;
   const masks = Array.from({ length: CHAMPION_NUMBER_CELLS.length }, () =>
@@ -45,21 +47,31 @@ function getChampionNumberArt(position: number): string[] {
   let xOffset = startX;
   for (const digit of digits) {
     for (let y = 0; y < height; y++) {
-      for (let x = 0; x < digit[y]!.length; x++) {
-        if (digit[y]![x] !== "1") continue;
+      const digitRow = digit[y];
+      if (digitRow === undefined) {
+        continue;
+      }
+      for (let x = 0; x < digitRow.length; x++) {
+        if (digitRow[x] !== "1") {
+          continue;
+        }
         const pixelX = xOffset + x;
         const pixelY = startY + y;
-        const bit = BRAILLE_BITS[pixelY % 4]![pixelX % 2]!;
-        masks[Math.floor(pixelY / 4)]![Math.floor(pixelX / 2)]! |= bit;
+        const bit = BRAILLE_BITS[pixelY % 4]?.[pixelX % 2];
+        const maskRow = masks[Math.floor(pixelY / 4)];
+        const maskColumn = Math.floor(pixelX / 2);
+        if (bit !== undefined && maskRow?.[maskColumn] !== undefined) {
+          maskRow[maskColumn] += bit;
+        }
       }
     }
-    xOffset += digit[0]!.length + DIGIT_GAP;
+    xOffset += (digit[0]?.length ?? 0) + DIGIT_GAP;
   }
 
   return CHAMPION_NUMBER_CELLS.map((line, row) =>
     line
       .map((cell, column) => {
-        const mask = masks[row]![column]!;
+        const mask = masks[row]?.[column] ?? 0;
         return mask ? `${WHITE}${String.fromCodePoint(0x2800 + mask)}${RESET}` : cell;
       })
       .join("")
@@ -67,9 +79,15 @@ function getChampionNumberArt(position: number): string[] {
 }
 
 export function getRankArt(tier: number, champNumber?: number): string[] {
-  const clamped = Math.max(0, Math.min(40, tier));
-  if (clamped === 40 && champNumber !== undefined && champNumber >= 1 && champNumber <= 9999) {
+  const clamped = normalizeTier(tier);
+  if (
+    clamped === 40 &&
+    champNumber !== undefined &&
+    Number.isInteger(champNumber) &&
+    champNumber >= 1 &&
+    champNumber <= 9999
+  ) {
     return getChampionNumberArt(champNumber);
   }
-  return [...RANK_ART_MAP[clamped]!];
+  return [...(RANK_ART_MAP[clamped] ?? RANK_ART_MAP[0] ?? [])];
 }

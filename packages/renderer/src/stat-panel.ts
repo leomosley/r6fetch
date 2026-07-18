@@ -1,5 +1,6 @@
 import type { PlayerProfile } from "@r6fetch/r6-client";
-import { fg, RESET, BOLD, DIM, padRight, visualWidth } from "./ansi";
+import { fg, RESET, BOLD, DIM, padRight, truncateText, visualWidth } from "./ansi";
+import { normalizeTier } from "./rank-art";
 import { RANK_COLORS_MAP } from "./rank-art-data";
 
 const STAT_KEYS = [
@@ -18,17 +19,34 @@ const STAT_KEYS = [
 const KEY_WIDTH = Math.max(...STAT_KEYS.map((k) => k.length)) + 2;
 const GREY = fg(160, 160, 160);
 const WHITE = fg(230, 230, 230);
+const MAX_USERNAME_WIDTH = 24;
+const MAX_LABEL_WIDTH = 20;
+const NUMBER_FORMAT = new Intl.NumberFormat("en-US");
 
 type StatLine =
   | { kind: "header"; text: string }
   | { kind: "separator" }
-  | { kind: "blank" }
-  | { kind: "stat"; key: string; value: string; valueColor?: string };
+  | { kind: "stat"; key: string; value: string };
 
 function rankColor(tier: number): string {
-  const clamped = Math.max(0, Math.min(40, tier));
-  const [r, g, b] = RANK_COLORS_MAP[clamped]!;
+  const color = RANK_COLORS_MAP[normalizeTier(tier)] ?? RANK_COLORS_MAP[0];
+  if (color === undefined) {
+    return WHITE;
+  }
+  const [r, g, b] = color;
   return fg(r, g, b);
+}
+
+function isPositiveInteger(value: number | null | undefined): value is number {
+  return value !== null && value !== undefined && Number.isInteger(value) && value > 0;
+}
+
+function getNonNegativeNumber(value: number): number {
+  return Number.isFinite(value) && value >= 0 ? value : 0;
+}
+
+function getNonNegativeInteger(value: number): number {
+  return Number.isInteger(value) && value >= 0 ? value : 0;
 }
 
 function fmtRank(
@@ -39,19 +57,20 @@ function fmtRank(
   leaderboardPosition?: number | null
 ): string {
   const col = rankColor(tier);
-  const rpStr = rp > 0 ? `${DIM} · ${RESET}${GREY}${rp.toLocaleString()} RP${RESET}` : "";
-  // Show champ number if available, otherwise show leaderboard position if available
-  const positionStr =
-    champNumber !== undefined
-      ? `${DIM} · ${RESET}${GREY}#${champNumber.toLocaleString()}${RESET}`
-      : leaderboardPosition
-        ? `${DIM} · ${RESET}${GREY}#${leaderboardPosition.toLocaleString()}${RESET}`
-        : "";
-  return `${col}${BOLD}${name}${RESET}${rpStr}${positionStr}`;
+  const safeRp = getNonNegativeNumber(rp);
+  const safeName = truncateText(name, MAX_LABEL_WIDTH);
+  const rpStr =
+    safeRp > 0 ? `${DIM} · ${RESET}${GREY}${NUMBER_FORMAT.format(safeRp)} RP${RESET}` : "";
+  const positionStr = isPositiveInteger(champNumber)
+    ? `${DIM} · ${RESET}${GREY}#${fmtNumber(champNumber)}${RESET}`
+    : isPositiveInteger(leaderboardPosition)
+      ? `${DIM} · ${RESET}${GREY}#${fmtNumber(leaderboardPosition)}${RESET}`
+      : "";
+  return `${col}${BOLD}${safeName}${RESET}${rpStr}${positionStr}`;
 }
 
 function fmtNumber(n: number): string {
-  return n.toLocaleString();
+  return NUMBER_FORMAT.format(getNonNegativeInteger(n));
 }
 
 export function buildStatLines(profile: PlayerProfile): string[] {
@@ -59,7 +78,7 @@ export function buildStatLines(profile: PlayerProfile): string[] {
 
   lines.push({
     kind: "header",
-    text: `${BOLD}${WHITE}${profile.username}${RESET}  ${DIM}@ ${profile.platform}${RESET}`,
+    text: `${BOLD}${WHITE}${truncateText(profile.username, MAX_USERNAME_WIDTH)}${RESET}  ${DIM}@ ${profile.platform}${RESET}`,
   });
   lines.push({ kind: "separator" });
 
@@ -99,19 +118,11 @@ export function buildStatLines(profile: PlayerProfile): string[] {
   });
   lines.push({ kind: "separator" });
 
-  lines.push({ kind: "stat", key: "K/D", value: profile.kd.toFixed(2) });
+  lines.push({ kind: "stat", key: "K/D", value: getNonNegativeNumber(profile.kd).toFixed(2) });
   lines.push({
     kind: "stat",
     key: "Win Rate",
-    value: (() => {
-      const ratio =
-        profile.losses > 0 ? (profile.wins / profile.losses).toFixed(2) : profile.wins.toFixed(2);
-      const pct =
-        profile.wins + profile.losses > 0
-          ? Math.round((profile.wins / (profile.wins + profile.losses)) * 100)
-          : 0;
-      return `${ratio} (${pct}%)`;
-    })(),
+    value: `${Math.min(100, getNonNegativeNumber(profile.winRate)).toFixed(0)}%`,
   });
   lines.push({ kind: "stat", key: "Kills", value: fmtNumber(profile.kills) });
   lines.push({ kind: "stat", key: "Deaths", value: fmtNumber(profile.deaths) });
@@ -125,25 +136,27 @@ export function buildStatLines(profile: PlayerProfile): string[] {
     lines.push({
       kind: "stat",
       key: "Headshot %",
-      value: `${profile.headshotPercent.toFixed(1)}%`,
+      value: `${Math.min(100, getNonNegativeNumber(profile.headshotPercent)).toFixed(1)}%`,
     });
   }
 
   if (profile.topOperator !== null) {
-    lines.push({ kind: "stat", key: "Top Operator", value: profile.topOperator });
+    lines.push({
+      kind: "stat",
+      key: "Top Operator",
+      value: truncateText(profile.topOperator, MAX_LABEL_WIDTH),
+    });
   }
 
   return renderLines(lines);
 }
 
 function renderLines(lines: StatLine[]): string[] {
-  // Calculate max width from actual content
   let maxWidth = 0;
   for (const line of lines) {
     if (line.kind === "header") {
       maxWidth = Math.max(maxWidth, visualWidth(line.text));
     } else if (line.kind === "stat") {
-      // key width + 2 spaces + value width
       const lineWidth = KEY_WIDTH + 2 + visualWidth(line.value);
       maxWidth = Math.max(maxWidth, lineWidth);
     }
@@ -155,13 +168,9 @@ function renderLines(lines: StatLine[]): string[] {
         return line.text;
       case "separator":
         return `${DIM}${"─".repeat(maxWidth)}${RESET}`;
-      case "blank":
-        return "";
       case "stat": {
         const key = padRight(`${GREY}${line.key}${RESET}`, KEY_WIDTH);
-        const value = line.valueColor
-          ? `${line.valueColor}${line.value}${RESET}`
-          : `${WHITE}${line.value}${RESET}`;
+        const value = `${WHITE}${line.value}${RESET}`;
         return `${key}  ${value}`;
       }
     }
