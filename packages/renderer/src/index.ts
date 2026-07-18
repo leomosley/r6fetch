@@ -10,7 +10,7 @@ const GAP = "    ";
  * fastfetch-style: rank art on the left, stat panel on the right.
  */
 export function render(profile: PlayerProfile): string {
-  const artLines = getRankArt(profile.currentRank.tier);
+  const artLines = getRankArt(profile.currentRank.tier, profile.currentRank.champNumber);
   const statLines = buildStatLines(profile);
 
   const height = Math.max(artLines.length, statLines.length);

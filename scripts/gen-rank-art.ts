@@ -47,6 +47,10 @@ const HEIGHT = 18;
 const RANKS_DIR = join(import.meta.dir, "../packages/renderer/src/ranks");
 const OUT_FILE = join(import.meta.dir, "../packages/renderer/src/rank-art-data.ts");
 
+const CHAMPION_NUMBER_SAMPLES = [1, 90, 1234, 5678] as const;
+const CHAMPION_NUMBER_URL = (position: number) =>
+  `https://static.stats.cc/siege/ranks/v7-champion-position-${position}-small.webp`;
+
 /** Ordered to match tier indices 0–40 in RANK_NAMES. */
 const RANK_SLUGS = [
   "unranked",
@@ -177,19 +181,21 @@ async function extractDominantColor(filePath: string): Promise<[number, number, 
 
 // ── image → ANSI ──────────────────────────────────────────────────────────────
 
-async function imageToAnsiLines(filePath: string): Promise<string[]> {
+type SharpInput = string | Buffer;
+
+async function imageToAnsiCells(input: SharpInput): Promise<string[][]> {
   // Resize to (WIDTH*2) × (HEIGHT*4) so each braille char covers exactly 2×4 px.
-  const { data, info } = await sharp(filePath)
+  const { data, info } = await sharp(input)
     .resize(WIDTH * 2, HEIGHT * 4, { fit: "fill", kernel: "lanczos3" })
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
 
   const { width, height } = info;
-  const lines: string[] = [];
+  const lines: string[][] = [];
 
   for (let charRow = 0; charRow < HEIGHT; charRow++) {
-    let line = "";
+    const line: string[] = [];
 
     for (let charCol = 0; charCol < WIDTH; charCol++) {
       let bits = 0;
@@ -222,13 +228,13 @@ async function imageToAnsiLines(filePath: string): Promise<string[]> {
       }
 
       if (count === 0) {
-        line += " ";
+        line.push(" ");
       } else {
         const r = Math.round(sumR / count);
         const g = Math.round(sumG / count);
         const b = Math.round(sumB / count);
         const ch = String.fromCodePoint(0x2800 + bits);
-        line += `\x1b[38;2;${r};${g};${b}m${ch}\x1b[0m`;
+        line.push(`\x1b[38;2;${r};${g};${b}m${ch}\x1b[0m`);
       }
     }
 
@@ -236,6 +242,67 @@ async function imageToAnsiLines(filePath: string): Promise<string[]> {
   }
 
   return lines;
+}
+
+async function imageToAnsiLines(input: SharpInput): Promise<string[]> {
+  return (await imageToAnsiCells(input)).map((line) => line.join(""));
+}
+
+async function fetchChampionNumberSamples(): Promise<Map<number, Buffer>> {
+  const entries = await Promise.all(
+    CHAMPION_NUMBER_SAMPLES.map(async (position) => {
+      const response = await fetch(CHAMPION_NUMBER_URL(position));
+      if (!response.ok) throw new Error(`Failed to download Champion #${position}`);
+      return [position, Buffer.from(await response.arrayBuffer())] as const;
+    })
+  );
+  return new Map(entries);
+}
+
+const DIGIT_SOURCES = [
+  { digit: "0", sample: 90, left: 121, right: 150 },
+  { digit: "1", sample: 1234, left: 61, right: 76 },
+  { digit: "2", sample: 1234, left: 84, right: 111 },
+  { digit: "3", sample: 1234, left: 115, right: 143 },
+  { digit: "4", sample: 1234, left: 147, right: 177 },
+  { digit: "5", sample: 5678, left: 58, right: 86 },
+  { digit: "6", sample: 5678, left: 91, right: 119 },
+  { digit: "7", sample: 5678, left: 122, right: 147 },
+  { digit: "8", sample: 5678, left: 151, right: 180 },
+  { digit: "9", sample: 90, left: 88, right: 116 },
+] as const;
+
+async function extractChampionDigits(samples: Map<number, Buffer>): Promise<string[][]> {
+  const resized = new Map<number, Buffer>();
+  for (const [position, input] of samples) {
+    resized.set(
+      position,
+      await sharp(input)
+        .resize(WIDTH * 2, HEIGHT * 4)
+        .removeAlpha()
+        .raw()
+        .toBuffer()
+    );
+  }
+
+  const top = Math.floor(85 * ((HEIGHT * 4) / 240));
+  const bottom = Math.ceil(136 * ((HEIGHT * 4) / 240));
+  return DIGIT_SOURCES.map(({ sample, left, right }) => {
+    const data = resized.get(sample)!;
+    const start = Math.floor(left * ((WIDTH * 2) / 240));
+    const end = Math.ceil((right + 1) * ((WIDTH * 2) / 240));
+    const rows: string[] = [];
+    for (let y = top; y < bottom; y++) {
+      let row = "";
+      for (let x = start; x < end; x++) {
+        const offset = (y * WIDTH * 2 + x) * 3;
+        const visible = data[offset]! > 80 && data[offset + 1]! > 80 && data[offset + 2]! > 80;
+        row += visible ? "1" : "0";
+      }
+      rows.push(row);
+    }
+    return rows;
+  });
 }
 
 // ── main ──────────────────────────────────────────────────────────────────────
@@ -261,6 +328,20 @@ async function main() {
     allColors.push(color);
     console.log(`→ ${lines.length} lines  color: rgb(${color.join(", ")})`);
   }
+
+  const numberSamples = await fetchChampionNumberSamples();
+  const blankChampion = await sharp(numberSamples.get(1)!)
+    .composite([
+      {
+        input: { create: { width: 32, height: 62, channels: 4, background: "#000000" } },
+        left: 104,
+        top: 79,
+      },
+    ])
+    .webp({ lossless: true })
+    .toBuffer();
+  const championNumberCells = await imageToAnsiCells(blankChampion);
+  const championDigits = await extractChampionDigits(numberSamples);
 
   const entries = allArt.map((lines, tier) => {
     const slug = RANK_SLUGS[tier];
@@ -298,6 +379,12 @@ ${colorEntries}
 export const RANK_ART_MAP: readonly (readonly string[])[] = [
 ${entries.join(",\n")},
 ];
+
+/** Blank numbered Champion badge, stored as cells for runtime digit composition. */
+export const CHAMPION_NUMBER_CELLS: readonly (readonly string[])[] = ${JSON.stringify(championNumberCells)};
+
+/** Monochrome 72px-space glyph masks indexed by digit. */
+export const CHAMPION_DIGIT_MASKS: readonly (readonly string[])[] = ${JSON.stringify(championDigits)};
 `;
 
   writeFileSync(OUT_FILE, ts, "utf8");
