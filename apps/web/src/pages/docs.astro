@@ -9,9 +9,9 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Documentation for r6fetch - Rainbow Six Siege stats in your terminal."
+      content="Documentation for r6fetch — Rainbow Six Siege stats in your terminal."
     />
-    <title>docs - r6fetch</title>
+    <title>docs — r6fetch</title>
     <link rel="icon" type="image/png" href="/icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,13 +21,12 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
     />
   </head>
   <body>
-    <!-- Header -->
     <header class="header">
       <a href="https://mosly.dev" target="_blank" rel="noopener noreferrer" class="header-logo">
         <img src="/icon.png" alt="mosly.dev" width="32" height="32" />
       </a>
       <nav class="header-nav">
-        <a href="/docs" class="nav-link nav-link--docs">docs</a>
+        <a href="/docs" class="nav-link nav-link--docs" aria-current="page">docs</a>
         <a
           href="https://github.com/leomosley/r6fetch"
           target="_blank"
@@ -41,6 +40,8 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
             fill="none"
             stroke="currentColor"
             stroke-width="2"
+            aria-hidden="true"
+            focusable="false"
           >
             <path d="M7 17L17 7M17 7H7M17 7V17"></path>
           </svg>
@@ -48,7 +49,6 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
       </nav>
     </header>
 
-    <!-- Main content -->
     <main class="main">
       <div class="content">
         <a href="/" class="back-link">&larr; back</a>
@@ -59,38 +59,30 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
           <h2 class="section-title">usage</h2>
           <p class="text">Fetch Rainbow Six Siege stats directly in your terminal using curl.</p>
 
-          <div class="code-block">
-            <code
-              ><span class="prompt">$</span> curl {DOMAIN}/<span class="param"
-                >&lt;platform&gt;</span
-              >/<span class="param">&lt;username&gt;</span></code
-            >
-          </div>
+          <pre
+            class="code-block"><code><span class="prompt">$</span> curl {DOMAIN}/<span class="param">&lt;platform&gt;</span>/<span class="param">&lt;username&gt;</span></code></pre>
         </section>
 
         <section class="section">
           <h2 class="section-title">platforms</h2>
           <ul class="list">
-            <li><code class="inline-code">pc</code> - Ubisoft Connect / PC</li>
-            <li><code class="inline-code">psn</code> - PlayStation Network</li>
-            <li><code class="inline-code">xbl</code> - Xbox Live</li>
+            <li><code class="inline-code">pc</code> — Ubisoft Connect / PC</li>
+            <li><code class="inline-code">ps</code> — PlayStation Network</li>
+            <li><code class="inline-code">xbox</code> — Xbox Live</li>
           </ul>
         </section>
 
         <section class="section">
           <h2 class="section-title">examples</h2>
 
-          <div class="code-block">
-            <code><span class="prompt">$</span> curl {DOMAIN}/pc/mosly</code>
-          </div>
+          <pre
+            class="code-block"><code><span class="prompt">$</span> curl {DOMAIN}/pc/mosly</code></pre>
 
-          <div class="code-block">
-            <code><span class="prompt">$</span> curl {DOMAIN}/pc/welis</code>
-          </div>
+          <pre
+            class="code-block"><code><span class="prompt">$</span> curl {DOMAIN}/pc/welis</code></pre>
 
-          <div class="code-block">
-            <code><span class="prompt">$</span> curl {DOMAIN}/pc/Gaveni.M80</code>
-          </div>
+          <pre
+            class="code-block"><code><span class="prompt">$</span> curl {DOMAIN}/pc/Gaveni.M80</code></pre>
         </section>
 
         <section class="section">
@@ -110,14 +102,12 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
           <p class="text">Save a default player to quickly fetch stats with a single command.</p>
 
           <h3 class="subsection-title">bash / zsh</h3>
-          <div class="code-block">
-            <code><span class="prompt">$</span> curl {DOMAIN}/setup | sh</code>
-          </div>
+          <pre
+            class="code-block"><code><span class="prompt">$</span> curl {DOMAIN}/setup | sh</code></pre>
 
           <h3 class="subsection-title">powershell</h3>
-          <div class="code-block">
-            <code><span class="prompt">></span> iex (irm {DOMAIN}/setup)</code>
-          </div>
+          <pre
+            class="code-block"><code><span class="prompt">></span> iex (irm {DOMAIN}/setup)</code></pre>
 
           <p class="text">
             The setup script will prompt you for your platform and username, then create:
@@ -130,14 +120,10 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
           </ul>
 
           <p class="text">After setup, reload your shell and run:</p>
-          <div class="code-block">
-            <code><span class="prompt">$</span> r6fetch</code>
-          </div>
+          <pre class="code-block"><code><span class="prompt">$</span> r6fetch</code></pre>
 
           <p class="text">You can also override the defaults:</p>
-          <div class="code-block">
-            <code><span class="prompt">$</span> r6fetch pc mosly</code>
-          </div>
+          <pre class="code-block"><code><span class="prompt">$</span> r6fetch pc mosly</code></pre>
         </section>
       </div>
     </main>
@@ -156,9 +142,9 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
   :root {
     --bg: #030305;
     --text: #f0f0f5;
-    --text-dim: #505060;
+    --text-dim: #858598;
     --mono: "JetBrains Mono", monospace;
-    --accent: 196, 13, 98;
+    --accent: 232, 47, 132;
   }
 
   html,
@@ -172,9 +158,6 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
     font-family: var(--mono);
   }
 
-  /* ═══════════════════════════════════════════════════
-     HEADER
-     ═══════════════════════════════════════════════════ */
   .header {
     position: fixed;
     top: 0;
@@ -217,6 +200,7 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
     display: flex;
     align-items: center;
     gap: 0.25rem;
+    padding: 0.35rem 0;
   }
 
   .nav-link--docs {
@@ -242,9 +226,6 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
     stroke-width: 2.5;
   }
 
-  /* ═══════════════════════════════════════════════════
-     MAIN CONTENT
-     ═══════════════════════════════════════════════════ */
   .main {
     min-height: 100vh;
     display: flex;
@@ -278,9 +259,6 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
     color: var(--text);
   }
 
-  /* ═══════════════════════════════════════════════════
-     SECTIONS
-     ═══════════════════════════════════════════════════ */
   .section {
     margin-bottom: 2.5rem;
   }
@@ -320,9 +298,6 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
     color: var(--text-dim);
   }
 
-  /* ═══════════════════════════════════════════════════
-     CODE BLOCKS
-     ═══════════════════════════════════════════════════ */
   .code-block {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -330,6 +305,7 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
     padding: 0.75rem 1rem;
     margin-bottom: 0.75rem;
     overflow-x: auto;
+    white-space: pre;
   }
 
   .code-block code {
@@ -356,10 +332,18 @@ const DOMAIN = import.meta.env.PUBLIC_DOMAIN ?? "r6fetch.cc";
     color: var(--text);
   }
 
-  /* ═══════════════════════════════════════════════════
-     RESPONSIVE
-     ═══════════════════════════════════════════════════ */
+  .header-logo:focus-visible,
+  .nav-link:focus-visible,
+  .back-link:focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 4px;
+  }
+
   @media (max-width: 600px) {
+    .header {
+      padding: 1rem;
+    }
+
     .main {
       padding: 5rem 1.5rem 3rem;
     }

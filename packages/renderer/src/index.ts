@@ -5,10 +5,6 @@ import { padRight } from "./ansi";
 
 const GAP = "    ";
 
-/**
- * Render a PlayerProfile into an ANSI-coloured terminal string,
- * fastfetch-style: rank art on the left, stat panel on the right.
- */
 export function render(profile: PlayerProfile): string {
   const artLines = getRankArt(profile.currentRank.tier, profile.currentRank.champNumber);
   const statLines = buildStatLines(profile);
@@ -17,12 +13,11 @@ export function render(profile: PlayerProfile): string {
   const rows: string[] = [];
 
   for (let i = 0; i < height; i++) {
-    // Art column: pad to ART_WIDTH if line is missing
     const art = artLines[i] ?? " ".repeat(ART_WIDTH);
     const artPadded = padRight(art, ART_WIDTH);
 
-    const stat = statLines[i] ?? "";
-    rows.push(`${artPadded}${GAP}${stat}`);
+    const stat = statLines[i];
+    rows.push(stat === undefined ? artPadded : `${artPadded}${GAP}${stat}`);
   }
 
   return `\n${rows.join("\n")}\n\n`;

@@ -1,9 +1,6 @@
 import type { Platform, PlayerProfile, RankInfo } from "./types";
 import { slugToRankInfo } from "./ranks";
 
-/**
- * API response shape from r6.stats.cc/v2/profiles
- */
 export interface ProfileResponse {
   id: string;
   user_id: string;
@@ -76,14 +73,45 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isNonNegativeNumber(value: unknown): value is number {
+  return isFiniteNumber(value) && value >= 0;
+}
+
+function isNonNegativeInteger(value: unknown): value is number {
+  return isNonNegativeNumber(value) && Number.isInteger(value);
+}
+
+function isPositiveInteger(value: unknown): value is number {
+  return isFiniteNumber(value) && Number.isInteger(value) && value > 0;
+}
+
+function getNonNegativeInteger(record: Record<string, unknown>, key: string): number {
+  const value = record[key];
+  return isNonNegativeInteger(value) ? value : 0;
+}
+
+function getNonNegativeNumber(record: Record<string, unknown>, key: string): number {
+  const value = record[key];
+  return isNonNegativeNumber(value) ? value : 0;
+}
+
 function parseSeasonRankRecord(value: unknown): SeasonRankRecord | null {
-  if (!isRecord(value)) return null;
+  if (!isRecord(value)) {
+    return null;
+  }
   if (
     typeof value.season !== "string" ||
+    value.season.length === 0 ||
     typeof value.rank !== "string" ||
+    value.rank.length === 0 ||
     typeof value.max_rank !== "string" ||
-    typeof value.rank_points !== "number" ||
-    typeof value.max_rank_points !== "number"
+    value.max_rank.length === 0 ||
+    !isNonNegativeNumber(value.rank_points) ||
+    !isNonNegativeNumber(value.max_rank_points)
   ) {
     return null;
   }
@@ -94,8 +122,8 @@ function parseSeasonRankRecord(value: unknown): SeasonRankRecord | null {
     max_rank: value.max_rank,
     rank_points: value.rank_points,
     max_rank_points: value.max_rank_points,
-    ...(typeof value.rank_position === "number" && { rank_position: value.rank_position }),
-    ...(typeof value.max_rank_position === "number" && {
+    ...(isPositiveInteger(value.rank_position) && { rank_position: value.rank_position }),
+    ...(isPositiveInteger(value.max_rank_position) && {
       max_rank_position: value.max_rank_position,
     }),
   };
@@ -106,55 +134,61 @@ function parseSeasonModeRecord(value: unknown): SeasonModeRecord | null {
     return null;
   }
 
-  const number = (key: string) => (typeof value[key] === "number" ? value[key] : 0);
   return {
     season: value.season,
     mode: value.mode,
-    matches: number("matches"),
-    wins: number("wins"),
-    losses: number("losses"),
-    abandons: number("abandons"),
-    wr: number("wr"),
-    kills: number("kills"),
-    deaths: number("deaths"),
-    assists: number("assists"),
-    headshots: number("headshots"),
-    kd: number("kd"),
-    kda: number("kda"),
-    kpm: number("kpm"),
-    hs: number("hs"),
+    matches: getNonNegativeInteger(value, "matches"),
+    wins: getNonNegativeInteger(value, "wins"),
+    losses: getNonNegativeInteger(value, "losses"),
+    abandons: getNonNegativeInteger(value, "abandons"),
+    wr: getNonNegativeNumber(value, "wr"),
+    kills: getNonNegativeInteger(value, "kills"),
+    deaths: getNonNegativeInteger(value, "deaths"),
+    assists: getNonNegativeInteger(value, "assists"),
+    headshots: getNonNegativeInteger(value, "headshots"),
+    kd: getNonNegativeNumber(value, "kd"),
+    kda: getNonNegativeNumber(value, "kda"),
+    kpm: getNonNegativeNumber(value, "kpm"),
+    hs: getNonNegativeNumber(value, "hs"),
   };
 }
 
 function parseOperatorStats(value: unknown): OperatorStats[] {
-  if (!Array.isArray(value)) return [];
+  if (!Array.isArray(value)) {
+    return [];
+  }
 
   return value.flatMap((entry): OperatorStats[] => {
-    if (!isRecord(entry) || typeof entry.operator !== "string") return [];
-    const number = (key: string) => (typeof entry[key] === "number" ? entry[key] : 0);
+    if (!isRecord(entry) || typeof entry.operator !== "string") {
+      return [];
+    }
     return [
       {
         operator: entry.operator,
-        wins: number("wins"),
-        losses: number("losses"),
-        kills: number("kills"),
-        deaths: number("deaths"),
-        rounds_played: number("rounds_played"),
+        wins: getNonNegativeInteger(entry, "wins"),
+        losses: getNonNegativeInteger(entry, "losses"),
+        kills: getNonNegativeInteger(entry, "kills"),
+        deaths: getNonNegativeInteger(entry, "deaths"),
+        rounds_played: getNonNegativeInteger(entry, "rounds_played"),
       },
     ];
   });
 }
 
-/** Parse untrusted profile JSON, rejecting only malformed core fields. */
 export function parseProfileResponse(value: unknown): ProfileResponse {
   if (
     !isRecord(value) ||
     typeof value.id !== "string" ||
+    value.id.trim().length === 0 ||
     typeof value.user_id !== "string" ||
+    value.user_id.trim().length === 0 ||
     typeof value.username !== "string" ||
+    value.username.trim().length === 0 ||
     typeof value.platform !== "string" ||
-    typeof value.level !== "number" ||
+    value.platform.trim().length === 0 ||
+    !isNonNegativeInteger(value.level) ||
     typeof value.max_rank_season !== "string" ||
+    value.max_rank_season.trim().length === 0 ||
     !isRecord(value.ranked_season_records) ||
     !isRecord(value.season_mode_records)
   ) {
@@ -164,16 +198,22 @@ export function parseProfileResponse(value: unknown): ProfileResponse {
   const rankedSeasonRecords: Record<string, SeasonRankRecord> = {};
   for (const [season, record] of Object.entries(value.ranked_season_records)) {
     const parsed = parseSeasonRankRecord(record);
-    if (parsed) rankedSeasonRecords[season] = parsed;
+    if (parsed) {
+      rankedSeasonRecords[season] = parsed;
+    }
   }
 
   const seasonModeRecords: Record<string, Record<string, SeasonModeRecord>> = {};
   for (const [season, modes] of Object.entries(value.season_mode_records)) {
-    if (!isRecord(modes)) continue;
+    if (!isRecord(modes)) {
+      continue;
+    }
     const parsedModes: Record<string, SeasonModeRecord> = {};
     for (const [mode, record] of Object.entries(modes)) {
       const parsed = parseSeasonModeRecord(record);
-      if (parsed) parsedModes[mode] = parsed;
+      if (parsed) {
+        parsedModes[mode] = parsed;
+      }
     }
     seasonModeRecords[season] = parsedModes;
   }
@@ -186,8 +226,8 @@ export function parseProfileResponse(value: unknown): ProfileResponse {
     username: value.username,
     platform: value.platform,
     level: value.level,
-    hs: typeof value.hs === "number" ? value.hs : null,
-    views: typeof value.views === "number" ? value.views : 0,
+    hs: isNonNegativeNumber(value.hs) && value.hs <= 100 ? value.hs : null,
+    views: isNonNegativeNumber(value.views) ? value.views : 0,
     last_played_at: typeof value.last_played_at === "string" ? value.last_played_at : "",
     fetched_at: typeof value.fetched_at === "string" ? value.fetched_at : "",
     updated_at: typeof value.updated_at === "string" ? value.updated_at : "",
@@ -200,8 +240,9 @@ export function parseProfileResponse(value: unknown): ProfileResponse {
             : []
         )
       : [],
-    leaderboard_position:
-      typeof value.leaderboard_position === "number" ? value.leaderboard_position : null,
+    leaderboard_position: isPositiveInteger(value.leaderboard_position)
+      ? value.leaderboard_position
+      : null,
     max_rank_season: value.max_rank_season,
     ranked_season_records: rankedSeasonRecords,
     season_mode_records: seasonModeRecords,
@@ -214,43 +255,38 @@ export function parseProfileResponse(value: unknown): ProfileResponse {
   };
 }
 
-/**
- * Check if a rank slug represents a champion rank (old or new format).
- */
 function isChampionRank(slug: string | undefined | null): boolean {
-  if (!slug) return false;
+  if (!slug) {
+    return false;
+  }
   const lower = slug.toLowerCase();
-  // Old format: "champion"
-  // New format: "v7-champion-v", "v7-champion-iv", etc. or "champion-v", "champion-iv", etc.
   return lower === "champion" || lower.includes("champion-");
 }
 
-/**
- * Get top operator by most rounds played (combines attacker + defender).
- */
 function getTopOperator(topOperators: ProfileResponse["top_operators"]): string | null {
-  const all = [...(topOperators.attacker || []), ...(topOperators.defender || [])];
-  if (all.length === 0) return null;
+  const all = [...topOperators.attacker, ...topOperators.defender];
+  if (all.length === 0) {
+    return null;
+  }
 
-  // Sort by rounds_played descending
   all.sort((a, b) => b.rounds_played - a.rounds_played);
   const top = all[0];
 
-  // Capitalize first letter of operator name
-  if (!top?.operator) return null;
+  if (!top?.operator) {
+    return null;
+  }
   return top.operator.charAt(0).toUpperCase() + top.operator.slice(1);
 }
 
-/**
- * Get ranked bomb stats for the current season.
- */
 function getCurrentSeasonRankedStats(
   seasonModeRecords: ProfileResponse["season_mode_records"],
   currentSeason: string,
   rankedBombMode: string
 ): SeasonModeRecord | null {
   const seasonRecords = seasonModeRecords[currentSeason];
-  if (!seasonRecords) return null;
+  if (!seasonRecords) {
+    return null;
+  }
 
   return seasonRecords[rankedBombMode] ?? null;
 }
@@ -258,10 +294,8 @@ function getCurrentSeasonRankedStats(
 export function normaliseProfile(params: NormaliseParams): PlayerProfile {
   const { platform, response, currentSeason, rankedBombMode } = params;
 
-  // Current season rank data
   const currentSeasonRecord = response.ranked_season_records[currentSeason];
 
-  // Current rank
   const currentRank: RankInfo = currentSeasonRecord
     ? slugToRankInfo(
         currentSeasonRecord.rank,
@@ -270,7 +304,6 @@ export function normaliseProfile(params: NormaliseParams): PlayerProfile {
       )
     : slugToRankInfo(null, 0);
 
-  // Peak rank for current season
   const peakRankSeason: RankInfo = currentSeasonRecord
     ? slugToRankInfo(
         currentSeasonRecord.max_rank,
@@ -281,7 +314,6 @@ export function normaliseProfile(params: NormaliseParams): PlayerProfile {
       )
     : slugToRankInfo(null, 0);
 
-  // All-time peak rank
   const allTimePeak = response.ranked_season_records[response.max_rank_season];
   const peakRankAllTime: RankInfo = allTimePeak
     ? slugToRankInfo(
@@ -289,9 +321,8 @@ export function normaliseProfile(params: NormaliseParams): PlayerProfile {
         allTimePeak.max_rank_points,
         isChampionRank(allTimePeak.max_rank) ? allTimePeak.max_rank_position : undefined
       )
-    : peakRankSeason;
+    : { ...peakRankSeason };
 
-  // Get current season ranked stats
   const rankedStats = getCurrentSeasonRankedStats(
     response.season_mode_records,
     currentSeason,
@@ -304,9 +335,8 @@ export function normaliseProfile(params: NormaliseParams): PlayerProfile {
   const wins = rankedStats?.wins ?? 0;
   const losses = rankedStats?.losses ?? 0;
 
-  // Include leaderboard position if ≤10,000
   const leaderboardPosition =
-    response.leaderboard_position && response.leaderboard_position <= 10000
+    response.leaderboard_position !== null && response.leaderboard_position <= 10000
       ? response.leaderboard_position
       : null;
 

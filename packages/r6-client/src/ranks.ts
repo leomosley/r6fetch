@@ -49,7 +49,6 @@ const RANK_SLUG_TO_TIER: Record<string, number> = {
   "champion-i": 40,
 };
 
-/** Display names for each tier */
 export const RANK_NAMES: readonly string[] = [
   "Unranked",
   "Copper V",
@@ -94,13 +93,9 @@ export const RANK_NAMES: readonly string[] = [
   "Champion I",
 ];
 
-/**
- * Normalize a rank slug by stripping the v7- prefix if present.
- */
 function normalizeRankSlug(slug: string): string {
   let normalized = slug.toLowerCase();
 
-  // Strip v7- prefix (new rank system)
   if (normalized.startsWith("v7-")) {
     normalized = normalized.slice(3);
   }
@@ -108,9 +103,6 @@ function normalizeRankSlug(slug: string): string {
   return normalized;
 }
 
-/**
- * Convert a rank slug (e.g. "diamond-i" or "v7-diamond-i") to a RankInfo object.
- */
 export function slugToRankInfo(
   slug: string | null | undefined,
   rp: number,
@@ -138,7 +130,10 @@ export function slugToRankInfo(
     throw new ApiError(`Unsupported rank slug received from API: ${slug}`);
   }
 
-  const name = RANK_NAMES[tier]!;
+  const name = RANK_NAMES[tier];
+  if (name === undefined) {
+    throw new ApiError(`Rank tier has no display name: ${tier}`);
+  }
 
   return {
     name,
@@ -148,16 +143,12 @@ export function slugToRankInfo(
   };
 }
 
-/**
- * Convert a numeric tier to a RankInfo object.
- * @deprecated Use slugToRankInfo instead for new API
- */
 export function tierToRankInfo(tier: number, rp: number): RankInfo {
-  const clamped = Math.max(0, Math.min(40, Math.round(tier)));
+  const clamped = Number.isFinite(tier) ? Math.max(0, Math.min(40, Math.round(tier))) : 0;
   return {
     name: RANK_NAMES[clamped] ?? "Unknown",
     tier: clamped,
-    rp,
+    rp: Number.isFinite(rp) && rp >= 0 ? rp : 0,
   };
 }
 

@@ -3,11 +3,6 @@ import type { PlayerProfile } from "@r6fetch/r6-client";
 import { render } from "@r6fetch/renderer";
 import type { Bindings } from "~/bindings";
 
-/**
- * Rank name to base tier mapping.
- * Tiers: 0 = Unranked, 1-5 = Copper, 6-10 = Bronze, 11-15 = Silver,
- * 16-20 = Gold, 21-25 = Platinum, 26-30 = Emerald, 31-35 = Diamond, 36-40 = Champion
- */
 const RANK_BASE_TIERS: Record<string, number> = {
   unranked: 0,
   copper: 1,
@@ -20,7 +15,6 @@ const RANK_BASE_TIERS: Record<string, number> = {
   champion: 36,
 };
 
-/** Roman numeral to offset mapping (v=0, i=4) */
 const ROMAN_TO_OFFSET: Record<string, number> = {
   v: 0,
   iv: 1,
@@ -29,7 +23,6 @@ const ROMAN_TO_OFFSET: Record<string, number> = {
   i: 4,
 };
 
-/** Rank names for display */
 const RANK_NAMES = [
   "Unranked",
   "Copper V",
@@ -74,16 +67,7 @@ const RANK_NAMES = [
   "Champion I",
 ];
 
-/**
- * Test route for previewing rank art in local dev.
- *
- * Usage:
- *   curl localhost:8787/test/copper/v
- *   curl localhost:8787/test/diamond/i
- *   curl localhost:8787/test/champion/iii
- *   curl localhost:8787/test/champion/1234
- */
-export async function testRoute(c: Context<{ Bindings: Bindings }>) {
+export function testRoute(c: Context<{ Bindings: Bindings }>): Response {
   const rank = c.req.param("rank")?.toLowerCase() ?? "";
   const tier = c.req.param("tier")?.toLowerCase() ?? "";
 
@@ -102,14 +86,13 @@ export async function testRoute(c: Context<{ Bindings: Bindings }>) {
   if (rank === "unranked") {
     tierIndex = 0;
   } else if (rank === "champion") {
-    // Champion can be i-v OR a number (champ position up to 5 digits)
     const romanOffset = ROMAN_TO_OFFSET[tier];
     if (romanOffset !== undefined) {
       tierIndex = baseTier + romanOffset;
     } else {
-      const num = parseInt(tier, 10);
-      if (!isNaN(num) && num >= 1 && num <= 99999) {
-        tierIndex = 40; // Champion I (highest)
+      const num = Number(tier);
+      if (/^\d{1,5}$/.test(tier) && Number.isInteger(num) && num >= 1 && num <= 99999) {
+        tierIndex = 40;
         champNumber = num;
       } else {
         return c.text(
@@ -128,8 +111,6 @@ export async function testRoute(c: Context<{ Bindings: Bindings }>) {
 
   const rankName = RANK_NAMES[tierIndex] ?? "Unknown";
 
-  // Build dummy profile with the specified rank
-  // Show leaderboard position for high ranks (diamond+) or if champ number specified
   const showLeaderboard = tierIndex >= 31 || champNumber !== undefined;
   const dummyLeaderboardPosition = showLeaderboard ? Math.min(champNumber ?? 1234, 10000) : null;
 
