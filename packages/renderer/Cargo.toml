@@ -9,3 +9,6 @@ rust-version.workspace = true
 r6-client = { path = "../r6-client" }
 serde.workspace = true
 serde_json.workspace = true
+
+[lints]
+workspace = true

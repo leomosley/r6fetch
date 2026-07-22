@@ -119,6 +119,7 @@ pub fn slug_to_rank_info(
     })
 }
 
+#[must_use]
 pub fn tier_to_rank_info(tier: f64, rp: f64) -> RankInfo {
     let tier = if tier.is_finite() {
         js_round(tier).clamp(0.0, 40.0)
@@ -133,6 +134,7 @@ pub fn tier_to_rank_info(tier: f64, rp: f64) -> RankInfo {
     }
 }
 
+#[must_use]
 pub fn rank_name_to_tier(name: &str) -> usize {
     RANK_NAMES
         .iter()
@@ -140,6 +142,7 @@ pub fn rank_name_to_tier(name: &str) -> usize {
         .unwrap_or(0)
 }
 
+#[must_use]
 pub fn round_js(value: f64) -> f64 {
     js_round(value)
 }

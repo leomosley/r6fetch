@@ -101,19 +101,18 @@ pub async fn stats_route(
         );
     };
     let cache_key = format!("stats:v2:{}:{}", platform.as_str(), username.to_lowercase());
-    if cache_enabled {
-        if let Ok(Some(value)) = env.kv("CACHE")?.get(&cache_key).text().await {
-            if !value.is_empty() {
-                return text_with_headers(
-                    value,
-                    200,
-                    &[
-                        ("X-Cache", "HIT".into()),
-                        ("Cache-Control", format!("public, max-age={ttl}")),
-                    ],
-                );
-            }
-        }
+    if cache_enabled
+        && let Ok(Some(value)) = env.kv("CACHE")?.get(&cache_key).text().await
+        && !value.is_empty()
+    {
+        return text_with_headers(
+            value,
+            200,
+            &[
+                ("X-Cache", "HIT".into()),
+                ("Cache-Control", format!("public, max-age={ttl}")),
+            ],
+        );
     }
     let profile = match client::profile(platform, username, &api_key).await {
         Ok(profile) => profile,
@@ -122,7 +121,7 @@ pub async fn stats_route(
                 format!(
                     "\n  Player not found: {username} on {}\n\n  Check the username and platform are correct.\n  Usage: curl {}/<platform>/<username>\n\n",
                     platform.as_str(),
-                    env.var("DOMAIN")?.to_string()
+                    env.var("DOMAIN")?
                 ),
                 404,
             );

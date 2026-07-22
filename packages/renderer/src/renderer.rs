@@ -95,6 +95,7 @@ enum Line {
     Stat(&'static str, String),
 }
 
+#[must_use]
 pub fn build_stat_lines(profile: &PlayerProfile) -> Vec<String> {
     let safe = |number: f64| {
         if number.is_finite() && number >= 0.0 {
@@ -169,6 +170,7 @@ pub fn build_stat_lines(profile: &PlayerProfile) -> Vec<String> {
         .collect()
 }
 
+#[must_use]
 pub fn render(profile: &PlayerProfile) -> String {
     let art = get_rank_art(profile.current_rank.tier, profile.current_rank.champ_number);
     let stats = build_stat_lines(profile);
