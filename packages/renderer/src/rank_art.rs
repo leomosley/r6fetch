@@ -26,6 +26,7 @@ pub(crate) static DATA: LazyLock<RankArtData> = LazyLock::new(|| {
     data
 });
 
+#[must_use]
 pub fn normalize_tier(tier: f64) -> usize {
     if tier.is_finite() {
         round_js(tier).clamp(0.0, 40.0) as usize
@@ -101,6 +102,7 @@ fn champion_number_art(position: u32) -> Vec<String> {
         .collect()
 }
 
+#[must_use]
 pub fn get_rank_art(tier: f64, champ_number: Option<f64>) -> Vec<String> {
     let tier = normalize_tier(tier);
     if tier == 40

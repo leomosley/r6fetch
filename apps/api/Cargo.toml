@@ -14,3 +14,6 @@ r6-client = { path = "../../packages/r6-client" }
 renderer = { path = "../../packages/renderer" }
 serde_json.workspace = true
 worker.workspace = true
+
+[lints]
+workspace = true

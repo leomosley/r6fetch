@@ -15,6 +15,7 @@ fn is_wide(code: u32) -> bool {
             || matches!(code, 0x2329 | 0x232a | 0x2e80..=0xa4cf | 0xac00..=0xd7a3 | 0xf900..=0xfaff | 0xfe10..=0xfe19 | 0xfe30..=0xfe6f | 0xff00..=0xff60 | 0xffe0..=0xffe6 | 0x1f300..=0x1faff | 0x20000..=0x3fffd))
 }
 
+#[must_use]
 pub fn strip_ansi(value: &str) -> String {
     let chars: Vec<char> = value.chars().collect();
     let mut output = String::new();
@@ -39,6 +40,7 @@ pub fn strip_ansi(value: &str) -> String {
     output
 }
 
+#[must_use]
 pub fn sanitize_terminal_text(value: &str) -> String {
     value
         .chars()
@@ -65,6 +67,7 @@ fn clusters(value: &str) -> Vec<String> {
     result
 }
 
+#[must_use]
 pub fn visual_width(value: &str) -> usize {
     clusters(&strip_ansi(value))
         .iter()
@@ -81,6 +84,7 @@ pub fn visual_width(value: &str) -> usize {
         .sum()
 }
 
+#[must_use]
 pub fn truncate_text(value: &str, max_width: usize) -> String {
     let sanitized = sanitize_terminal_text(value);
     if visual_width(&sanitized) <= max_width {
@@ -97,6 +101,7 @@ pub fn truncate_text(value: &str, max_width: usize) -> String {
     output
 }
 
+#[must_use]
 pub fn pad_right(value: &str, width: usize) -> String {
     format!(
         "{value}{}",

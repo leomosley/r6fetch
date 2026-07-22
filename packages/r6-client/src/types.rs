@@ -12,6 +12,7 @@ pub enum Platform {
 }
 
 impl Platform {
+    #[must_use]
     pub fn parse(value: &str) -> Option<Self> {
         match value {
             "pc" => Some(Self::Pc),
@@ -21,6 +22,7 @@ impl Platform {
         }
     }
 
+    #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Pc => "pc",
@@ -29,6 +31,7 @@ impl Platform {
         }
     }
 
+    #[must_use]
     pub const fn api_name(self) -> &'static str {
         match self {
             Self::Pc => "pc",
