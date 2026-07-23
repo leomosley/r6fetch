@@ -1,5 +1,9 @@
-# Rate limiting ruleset: 5 requests per 10 seconds per IP on <domain>
+# Rate limiting ruleset: 5 requests per 10 seconds per IP on the stats endpoints.
 # Applied at the Cloudflare edge before the request reaches the Worker.
+#
+# Scoped to the /<platform>/<username> stats paths only. This protects the
+# upstream stats.cc API from abuse without throttling the website, docs, setup
+# script, or static assets served from the same host.
 #
 # Requires "Zone > Zone WAF > Edit" permission on the API token
 # Note: Free plan only supports 10-second periods
@@ -25,8 +29,8 @@ resource "cloudflare_ruleset" "rate-limit" {
       requests_per_period = 5
       mitigation_timeout  = 10
     }
-    expression  = "(http.host eq \"${var.domain}\")"
-    description = "5 req/10s per IP"
+    expression  = "(http.host eq \"${var.domain}\" and (starts_with(http.request.uri.path, \"/pc/\") or starts_with(http.request.uri.path, \"/ps/\") or starts_with(http.request.uri.path, \"/xbox/\")))"
+    description = "5 req/10s per IP on stats endpoints"
     enabled     = true
   }
 }
