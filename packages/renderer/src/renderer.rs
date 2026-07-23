@@ -184,7 +184,7 @@ pub fn render(profile: &PlayerProfile) -> String {
             let padded = pad_right(&art_line, ART_WIDTH);
             stats
                 .get(index)
-                .map_or(padded.clone(), |stat| format!("{padded}    {stat}"))
+                .map_or(padded.clone(), |stat| format!("{padded}  {stat}"))
         })
         .collect();
     format!("\n{}\n\n", rows.join("\n"))
