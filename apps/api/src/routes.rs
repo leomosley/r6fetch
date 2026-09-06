@@ -21,6 +21,7 @@ pub fn welcome(domain: &str) -> String {
 fn text_with_headers(body: String, status: u16, headers: &[(&str, String)]) -> Result<Response> {
     let response_headers = Headers::new();
     response_headers.set("Content-Type", "text/plain; charset=UTF-8")?;
+    response_headers.set("Access-Control-Allow-Origin", "https://mosly.space")?;
     for (key, value) in headers {
         response_headers.set(key, value)?;
     }
