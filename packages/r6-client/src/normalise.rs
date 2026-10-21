@@ -3,7 +3,9 @@ use std::collections::BTreeMap;
 use serde_json::{Map, Value};
 
 use crate::ranks::round_js;
-use crate::types::{OperatorStats, SeasonModeRecord, SeasonRankRecord};
+use crate::types::{
+    LegendsInfo, OperatorStats, SeasonLegendsRecord, SeasonModeRecord, SeasonRankRecord,
+};
 use crate::{Platform, PlayerProfile, ProfileResponse, R6Error, RankInfo, slug_to_rank_info};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -77,6 +79,30 @@ fn parse_rank_record(value: &Value) -> Option<SeasonRankRecord> {
         max_rank_points: non_negative_number(record.get("max_rank_points"))?,
         rank_position: positive_integer(record.get("rank_position")),
         max_rank_position: positive_integer(record.get("max_rank_position")),
+    })
+}
+
+fn parse_legends_info(record: &Map<String, Value>, peak: bool) -> Option<LegendsInfo> {
+    let (rank, points, position) = if peak {
+        ("max_rank", "max_rank_points", "max_position")
+    } else {
+        ("rank", "rank_points", "position")
+    };
+    if record.get(rank)?.as_str()? != "legend-division" {
+        return None;
+    }
+    Some(LegendsInfo {
+        mmr: non_negative_number(record.get(points))?,
+        position: positive_integer(record.get(position)),
+    })
+}
+
+fn parse_legends_record(value: &Value) -> Option<SeasonLegendsRecord> {
+    let record = object(value)?;
+    required_nonblank(record, "season")?;
+    Some(SeasonLegendsRecord {
+        current: parse_legends_info(record, false),
+        peak: parse_legends_info(record, true),
     })
 }
 
@@ -155,6 +181,15 @@ pub fn parse_profile_response(value: &Value) -> Result<ProfileResponse, R6Error>
             .unwrap_or_default()
             .into(),
         ranked_season_records,
+        legend_season_records: record
+            .get("legend_season_records")
+            .and_then(object)
+            .into_iter()
+            .flatten()
+            .filter_map(|(season, value)| {
+                parse_legends_record(value).map(|parsed| (season.clone(), parsed))
+            })
+            .collect(),
         season_mode_records,
         attackers: parse_operators(top.and_then(|value| value.get("attacker"))),
         defenders: parse_operators(top.and_then(|value| value.get("defender"))),
@@ -235,6 +270,16 @@ pub fn normalise_profile(
         current_rank,
         peak_rank_season,
         peak_rank_all_time,
+        current_legends: response
+            .legend_season_records
+            .get(current_season)
+            .and_then(|record| record.current.clone()),
+        peak_legends: response
+            .legend_season_records
+            .values()
+            .filter_map(|record| record.peak.as_ref())
+            .max_by(|left, right| left.mmr.total_cmp(&right.mmr))
+            .cloned(),
         leaderboard_position: response
             .leaderboard_position
             .filter(|position| *position <= 10_000.0),

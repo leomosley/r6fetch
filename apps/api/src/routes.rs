@@ -242,6 +242,8 @@ pub fn test_route(rank: &str, tier: &str) -> Result<Response> {
         },
         leaderboard_position: (tier_index >= 31 || champ_number.is_some())
             .then_some(champ_number.unwrap_or(1234.0).min(10_000.0)),
+        current_legends: None,
+        peak_legends: None,
         kd: 1.25,
         win_rate: 52.0,
         kills: 12345.0,

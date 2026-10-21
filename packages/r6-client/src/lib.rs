@@ -6,7 +6,7 @@ pub use normalise::{
     ConfigResponse, normalise_profile, parse_config_response, parse_profile_response,
 };
 pub use ranks::{RANK_NAMES, rank_name_to_tier, round_js, slug_to_rank_info, tier_to_rank_info};
-pub use types::{Platform, PlayerProfile, ProfileResponse, R6Error, RankInfo};
+pub use types::{LegendsInfo, Platform, PlayerProfile, ProfileResponse, R6Error, RankInfo};
 
 #[cfg(test)]
 mod tests {

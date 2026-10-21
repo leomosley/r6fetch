@@ -57,6 +57,8 @@ mod tests {
                 current_rank: tier_to_rank_info(0.0, 0.0),
                 peak_rank_season: tier_to_rank_info(0.0, 0.0),
                 peak_rank_all_time: tier_to_rank_info(0.0, 0.0),
+                current_legends: None,
+                peak_legends: None,
                 leaderboard_position: None,
                 kd: 0.0,
                 win_rate: 0.0,
@@ -72,6 +74,49 @@ mod tests {
         #[test]
         fn output_starts_with_blank_line() {
             assert!(render(&empty_profile()).starts_with('\n'));
+        }
+
+        #[test]
+        fn hides_legends_for_players_without_history() {
+            assert!(!render(&empty_profile()).contains("Legends"));
+        }
+
+        #[test]
+        fn renders_current_and_peak_legends_in_light_blue() {
+            let mut profile = empty_profile();
+            profile.current_legends = Some(r6_client::LegendsInfo {
+                mmr: 5636.0,
+                position: Some(1.0),
+            });
+            profile.peak_legends = Some(r6_client::LegendsInfo {
+                mmr: 6000.0,
+                position: Some(2.0),
+            });
+            let lines = build_stat_lines(&profile);
+            let legends: Vec<_> = lines
+                .iter()
+                .filter(|line| line.contains("Legends"))
+                .collect();
+            assert_eq!(legends.len(), 2);
+            assert!(legends[0].contains("\u{1b}[38;2;135;206;250m\u{1b}[1m5,636 MMR · #1"));
+            assert!(legends[1].contains("\u{1b}[38;2;135;206;250m\u{1b}[1m6,000 MMR · #2"));
+        }
+
+        #[test]
+        fn renders_historical_peak_without_current_legends_or_fake_position() {
+            let mut profile = empty_profile();
+            profile.peak_legends = Some(r6_client::LegendsInfo {
+                mmr: 5000.0,
+                position: None,
+            });
+            let output = strip_ansi(&render(&profile));
+            let legends: Vec<_> = output
+                .lines()
+                .filter(|line| line.contains("Legends"))
+                .collect();
+            assert_eq!(legends.len(), 1);
+            assert!(legends[0].contains("Legends Peak     5,000 MMR"));
+            assert!(!legends[0].contains('#'));
         }
 
         #[test]

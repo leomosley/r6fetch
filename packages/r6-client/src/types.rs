@@ -60,6 +60,10 @@ pub struct PlayerProfile {
     pub current_rank: RankInfo,
     pub peak_rank_season: RankInfo,
     pub peak_rank_all_time: RankInfo,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub current_legends: Option<LegendsInfo>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub peak_legends: Option<LegendsInfo>,
     pub leaderboard_position: Option<f64>,
     pub kd: f64,
     pub win_rate: f64,
@@ -69,6 +73,19 @@ pub struct PlayerProfile {
     pub losses: f64,
     pub headshot_percent: Option<f64>,
     pub top_operator: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LegendsInfo {
+    pub mmr: f64,
+    pub position: Option<f64>,
+}
+
+#[derive(Clone, Debug)]
+pub struct SeasonLegendsRecord {
+    pub current: Option<LegendsInfo>,
+    pub peak: Option<LegendsInfo>,
 }
 
 #[derive(Clone, Debug)]
@@ -103,6 +120,7 @@ pub struct ProfileResponse {
     pub leaderboard_position: Option<f64>,
     pub max_rank_season: String,
     pub ranked_season_records: BTreeMap<String, SeasonRankRecord>,
+    pub legend_season_records: BTreeMap<String, SeasonLegendsRecord>,
     pub season_mode_records: BTreeMap<String, BTreeMap<String, SeasonModeRecord>>,
     pub attackers: Vec<OperatorStats>,
     pub defenders: Vec<OperatorStats>,
