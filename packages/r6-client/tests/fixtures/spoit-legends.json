@@ -1,0 +1,22 @@
+{
+  "id": "ab1ff7ae-13e4-4a6a-9b03-317285f8057b",
+  "user_id": "ab1ff7ae-13e4-4a6a-9b03-317285f8057b",
+  "username": "Spoit.SR",
+  "platform": "pc",
+  "level": 1752,
+  "max_rank_season": "collision-point",
+  "ranked_season_records": {},
+  "season_mode_records": {},
+  "legend_season_records": {
+    "split-fire": {
+      "season": "split-fire",
+      "rank": "legend-division",
+      "max_rank": "legend-division",
+      "rank_points": 5636,
+      "max_rank_points": 5636,
+      "position": 1,
+      "max_position": 1,
+      "region": "eumena"
+    }
+  }
+}

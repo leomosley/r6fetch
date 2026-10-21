@@ -1,5 +1,5 @@
 use crate::rank_art::DATA;
-use r6_client::{PlayerProfile, RankInfo};
+use r6_client::{LegendsInfo, PlayerProfile, RankInfo};
 
 use crate::{ART_WIDTH, get_rank_art, normalize_tier, pad_right, truncate_text, visual_width};
 
@@ -8,6 +8,7 @@ const BOLD: &str = "\u{1b}[1m";
 const DIM: &str = "\u{1b}[2m";
 const GREY: &str = "\u{1b}[38;2;160;160;160m";
 const WHITE: &str = "\u{1b}[38;2;230;230;230m";
+const LIGHT_BLUE: &str = "\u{1b}[38;2;135;206;250m";
 const KEY_WIDTH: usize = 15;
 
 fn grouped_integer(value: f64) -> String {
@@ -89,6 +90,16 @@ fn rank_text(rank: &RankInfo, fallback_position: Option<f64>) -> String {
     )
 }
 
+fn legends_text(legends: &LegendsInfo) -> String {
+    let position = positive_integer(legends.position).map_or_else(String::new, |number| {
+        format!(" · #{}", grouped_integer(number))
+    });
+    format!(
+        "{LIGHT_BLUE}{BOLD}{} MMR{position}{RESET}",
+        grouped_number(legends.mmr)
+    )
+}
+
 enum Line {
     Header(String),
     Separator,
@@ -122,6 +133,14 @@ pub fn build_stat_lines(profile: &PlayerProfile) -> Vec<String> {
             "All-Time Peak",
             rank_text(&profile.peak_rank_all_time, None),
         ),
+    ];
+    if let Some(legends) = &profile.current_legends {
+        lines.push(Line::Stat("Legends", legends_text(legends)));
+    }
+    if let Some(legends) = &profile.peak_legends {
+        lines.push(Line::Stat("Legends Peak", legends_text(legends)));
+    }
+    lines.extend([
         Line::Separator,
         Line::Stat("K/D", fixed_js(safe(profile.kd), 2)),
         Line::Stat(
@@ -138,7 +157,7 @@ pub fn build_stat_lines(profile: &PlayerProfile) -> Vec<String> {
                 grouped_integer(profile.losses)
             ),
         ),
-    ];
+    ]);
     if let Some(headshot) = profile.headshot_percent {
         lines.push(Line::Stat(
             "Headshot %",
