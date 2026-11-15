@@ -9,11 +9,11 @@ jobs:
     name: Typecheck & lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.2.0
+          bun-version: 1.4.4
 
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -45,9 +45,9 @@ jobs:
       TF_VAR_cloudflare_zone_id: ${{ secrets.CF_ZONE_ID }}
       TF_VAR_stats_cc_api_key: ${{ secrets.STATS_CC_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: opentofu/setup-opentofu@v1
+      - uses: opentofu/setup-opentofu@v2
 
       - name: OpenTofu init
         working-directory: infra
@@ -60,7 +60,7 @@ jobs:
         continue-on-error: true
 
       - name: Comment plan on PR
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs')
