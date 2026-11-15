@@ -14,7 +14,7 @@ pub fn welcome(domain: &str) -> String {
     };
     let origin = format!("{protocol}://{domain}");
     format!(
-        "\n  r6fetch — Rainbow Six Siege stats in your terminal\n  ───────────────────────────────────────────────────\n\n  Usage:\n    curl {origin}/<platform>/<username>\n\n  Platforms:\n    pc    — Ubisoft Connect\n    ps    — PlayStation Network\n    xbox  — Xbox Live\n\n  Examples:\n    curl {origin}/pc/GamersClub\n    curl {origin}/ps/Pengu\n    curl {origin}/xbox/Beaulo\n\n  First time? Set up a default player:\n    curl -fsSL {origin}/setup | sh\n\n  Web: https://{domain}\n\n"
+        "\n  r6fetch — Rainbow Six Siege stats in your terminal\n  ───────────────────────────────────────────────────\n\n  Usage:\n    curl {origin}/<platform>/<username>\n\n  Platforms:\n    pc    — Ubisoft Connect\n    ps    — PlayStation Network\n    xbox  — Xbox Live\n\n  Examples:\n    curl {origin}/pc/mosly\n    curl {origin}/ps/Pengu\n    curl {origin}/xbox/Beaulo\n\n  First time? Set up a default player:\n    curl -fsSL {origin}/setup | sh\n\n  Web: https://{domain}\n\n"
     )
 }
 
